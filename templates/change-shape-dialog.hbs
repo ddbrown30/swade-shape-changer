@@ -1,0 +1,21 @@
+<div class='ssc'>
+    <label for="shape">{{{localize "SSC.ChangeShapeDialog.ShapeSelectionLabel"}}}</label>
+    <select name="shape" class="shape" title="">
+        {{selectOptions shapes selected=shape localize=true valueAttr="name" labelAttr="label"}}
+    </select>
+    <br>
+    <p>
+    <label for="changeType">{{{localize "SSC.ChangeShapeDialog.ShapeChangeTypesLabel"}}}</label>
+    <select name="changeType" class="shape" title="">
+        {{selectOptions changeTypes selected=changeType localize=true}}
+    </select>
+    <br>
+    <p>
+    <div class="formgroup">
+        <input type="checkbox" id="animal-smarts" style="vertical-align: middle;">
+        <label for="animal-smarts" style="vertical-align: middle;">
+            {{localize "SSC.ChangeShapeDialog.AnimalSmartsCheckbox"}}
+        </label>
+    </div>
+    <br>
+</div>

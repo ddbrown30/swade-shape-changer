@@ -1,0 +1,39 @@
+{
+    "SSC": {
+        "ShapesTab": {
+            "Tab": "Shapes",
+            "Header": "Shapes"
+        },
+        "ChangeShapeDialog": {
+            "Title": "Shape Change Options",
+            "ShapeSelectionLabel": "Target Shape",
+            "ShapeChangeTypesLabel": "Change Type",
+            "AnimalSmartsCheckbox": "Set Animal Smarts",
+            "ShapeChangeTypes": {
+                "Base": "Shape Change",
+                "Polymorph": "Polymorph"
+            },
+            "SuccessButtonName": "Success",
+            "RaiseButtonName": "Raise",
+            "CancelButtonName": "Cancel",
+            "MaxWoundNotification": {
+                "Title": "Wound Changes",
+                "Body": "<p>The original actor had one or more active effects modifying max Wounds.<p>Be sure to check the new actor to verify they have the expected number of Wounds.<br>"
+            }
+        },
+        "ActorSheetDropDialog": {
+            "Title": "Add to Shape Change?",
+            "Body": "<p>Add dropped actor to the Shape Change power of this sheet?<br>"
+        },
+        "CompendiumWarning": {
+            "Title": "Compendium Actors",
+            "Body": "<p>Directly using compendium actors is not supported.<p>Please import the actor into your world first and then use the imported actor.<br>"
+        },
+
+        "Settings": {
+        }
+    },
+    "SSC.Yes": "Yes",
+    "SSC.No": "No",
+    "SSC.Okay": "Okay"
+}

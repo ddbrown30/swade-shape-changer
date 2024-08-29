@@ -1,0 +1,35 @@
+.shapes-list li {
+  margin-bottom: 5px;
+  display: grid;
+}
+
+.shapes-list .item-controls {
+  grid-column: 4;
+  justify-self: flex-end;
+}
+
+.shapes-list button {
+  background-color: transparent;
+  background-position: 50%;
+  background-repeat: no-repeat;
+  background-size: contain;
+  border: none;
+  border-radius: 0;
+  cursor: pointer;
+  font-family: var(--default-font);
+  line-height: 16px;
+  margin: 2px;
+  padding: 2px;
+  width: auto
+}
+
+.ssc .header {
+  color: var(--section-header-color);
+  display: grid;
+  font-family: var(--section-header-font);
+  font-size: var(--section-header-size);
+  grid-template-columns: auto 1fr auto;
+  text-align: center;
+  margin: 2px;
+  padding: 2px;
+}

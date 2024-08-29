@@ -1,0 +1,16 @@
+<div class="ssc">
+    <ul class='shapes-list'>
+        {{#each shapes}}
+        <li class='item shape'>
+            {{name}}
+            <span class='item-controls'>
+                {{#if ../isOwner}}
+                <button type='button' class='item-delete' data-item-id='{{uuid}}' title='{{localize "SWADE.Del"}}'>
+                    <i class='fas fa-trash'></i>
+                </button>
+                {{/if}}
+            </span>
+        </li>
+        {{/each}}
+    </ul>
+</div>

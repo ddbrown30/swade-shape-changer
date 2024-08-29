@@ -1,0 +1,30 @@
+{
+  "name": "Change Shape",
+  "type": "script",
+  "author": "26zedh1nuCLjFH0V",
+  "img": "icons/magic/control/debuff-energy-hold-levitate-yellow.webp",
+  "scope": "global",
+  "command": "game.swadeShapeChanger.changeShape(token);",
+  "folder": null,
+  "flags": {
+    "core": {}
+  },
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "coreVersion": "12.331",
+    "systemId": "swade",
+    "systemVersion": "4.1.0",
+    "createdTime": 1724912249105,
+    "modifiedTime": 1724912249105,
+    "lastModifiedBy": "26zedh1nuCLjFH0V"
+  },
+  "ownership": {
+    "default": 0,
+    "UQ9simz41eIsn2rv": 3,
+    "26zedh1nuCLjFH0V": 3
+  },
+  "_id": "c3568HPTSqGo5zci",
+  "sort": 0,
+  "_key": "!macros!c3568HPTSqGo5zci"
+}
