@@ -19,8 +19,11 @@ export const DEFAULT_CONFIG = {
 
 export const FLAGS = {
     shapes: "shapes",
+    originalToken: "originalToken",
+    isChangeSource: "isChangeSource",
 }
 
 export const SETTING_KEYS = {
+    ignoreWoundWarning: "ignoreWoundWarning",
 }
 

@@ -18,7 +18,8 @@
             "CancelButtonName": "Cancel",
             "MaxWoundNotification": {
                 "Title": "Wound Changes",
-                "Body": "<p>The original actor had one or more active effects modifying max Wounds.<p>Be sure to check the new actor to verify they have the expected number of Wounds.<br>"
+                "Body": "<p>The original actor had one or more active effects modifying max Wounds.<p>Be sure to check the new actor to verify they have the expected number of Wounds.<br>",
+                "IgnoreButton": "Don't Warn Again"
             }
         },
         "ActorSheetDropDialog": {
@@ -28,6 +29,17 @@
         "CompendiumWarning": {
             "Title": "Compendium Actors",
             "Body": "<p>Directly using compendium actors is not supported.<p>Please import the actor into your world first and then use the imported actor.<br>"
+        },
+        "DeleteTokenWarning": {
+            "Title": "Confirm Delete?",
+            "SourceBody": "<p>This token is marked as the source of a shape change. Deleting this token will break the ability to revert the shape change.<p>Are you sure you want to delete this token?<br>",
+            "CreatedBody": "<p>This token is was created as a result of a shape change. Deleting this token will break the ability to revert to the original token.<p>Are you sure you want to delete this token?<br>"
+        },
+        "Errors": {
+            "NoShapeChange": "Selected token does not have the shape change power.",
+            "NoShapes": "Selected token's shape change power contains no shapes. Drag actors to the caster or their shape change power to add shapes.",
+            "NotAChangedToken": "Selected token was not created by the shape change module.",
+            "OriginalTokenNotFound": "The original token no longer exists in the scene. You will have to revert manually."
         },
 
         "Settings": {

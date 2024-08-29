@@ -17,7 +17,7 @@ export class HooksManager {
 
             // Expose API methods
             game.swadeShapeChanger.changeShape = ShapeChangerAPI.changeShape;
-            game.swadeShapeChanger.createTokenWithActor = ShapeChangerAPI.createTokenWithActor;
+            game.swadeShapeChanger.revertShape = ShapeChangerAPI.revertShape;
 
             Utils.loadTemplates();
             registerSettings();
@@ -44,6 +44,24 @@ export class HooksManager {
 
         Hooks.on("dropActorSheetData", async (actor, sheet, data) => {
             ShapeChanger.onDropActorSheetData(actor, sheet, data);
+        });
+
+        Hooks.on("preDeleteToken", (token, options, user) => {
+            if (!options.skipDialog) {
+                const isChangeSource = token.getFlag(SSC_CONFIG.NAME, SSC_CONFIG.FLAGS.isChangeSource);
+                const originalToken = token.getFlag(SSC_CONFIG.NAME, SSC_CONFIG.FLAGS.originalToken);
+                if (isChangeSource || originalToken) {
+                    const content = isChangeSource ? "SSC.DeleteTokenWarning.SourceBody" : "SSC.DeleteTokenWarning.CreatedBody";
+                    Dialog.confirm({
+                        title: game.i18n.localize("SSC.DeleteTokenWarning.Title"),
+                        content: game.i18n.localize(content),
+                        yes: () => { canvas.scene.deleteEmbeddedDocuments("Token", [token.id], {skipDialog: true}); },
+                        no: () => { },
+                        defaultYes: false
+                    });
+                    return false;
+                }
+            }
         });
 
     }
