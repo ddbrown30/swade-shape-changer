@@ -85,10 +85,19 @@ export class ShapeChanger {
         $('.tabs', html).append($('<a>').addClass("item").attr("data-tab", "shapes").html(game.i18n.localize('SSC.ShapesTab.Tab')));
         $('<section>').addClass("tab shapes").attr('data-tab', 'shapes').html(content).insertAfter($('.tab:last', html));
 
-        //Event handler for the delete buttons
-        html.find("[class='item-delete']").click(ev => {
+        //Event handler for the actor
+        html.find("input.actor-button").click(ev => {
             let shapes = power.getFlag(SSC_CONFIG.NAME, SSC_CONFIG.FLAGS.shapes);
-            shapes = shapes.filter(e => e !== ev.currentTarget.dataset.itemId);
+            let shape = shapes.find(e => e == ev.currentTarget.dataset.shapeId);
+            const shapeActor = fromUuidSync(shape);
+            shapeActor.ownership[game.user.id] = shapeActor.ownership[game.user.id] ?? 2;
+            shapeActor.sheet.render(true);
+        });
+
+        //Event handler for the delete buttons
+        html.find("[class='shape-delete']").click(ev => {
+            let shapes = power.getFlag(SSC_CONFIG.NAME, SSC_CONFIG.FLAGS.shapes);
+            shapes = shapes.filter(e => e !== ev.currentTarget.dataset.shapeId);
             power.setFlag(SSC_CONFIG.NAME, SSC_CONFIG.FLAGS.shapes, shapes);
         });
 

@@ -16,7 +16,7 @@
   justify-self: flex-end;
 }
 
-.shapes-list img {
+.shapes-list input {
   width: 30px;
   border: hidden;
 }
