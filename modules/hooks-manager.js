@@ -1,5 +1,6 @@
 import { Utils } from "./utils.js";
 import { registerSettings } from "./settings.js";
+import { Handlers } from "./handlers.js";
 import { ShapeChanger } from "./shape-changer.js";
 import { ShapeChangerAPI } from "./shape-changer-api.js";
 import * as SSC_CONFIG from "./ssc-config.js";
@@ -23,19 +24,26 @@ export class HooksManager {
             registerSettings();
         });
 
+        Hooks.once("socketlib.ready", () => {
+            game.swadeShapeChanger = game.swadeShapeChanger ?? {};
+
+            game.swadeShapeChanger.socket = socketlib.registerModule(SSC_CONFIG.NAME);
+            game.swadeShapeChanger.socket.register("updateCombatant", ShapeChanger.updateCombatant);
+        });
+
         Hooks.on("ready", () => {
-            ShapeChanger.onReady();
+            Handlers.onReady();
         });
 
         /* -------------------------------------------- */
         /*                    Item                    */
         /* -------------------------------------------- */
         Hooks.on("preUpdateItem", ((app, html, data) => {
-            ShapeChanger.onPreUpdateItem(app, html, data);
-          }))
+            Handlers.onPreUpdateItem(app, html, data);
+        }))
 
         Hooks.on("renderItemSheet", (app, html, data) => {
-            ShapeChanger.onRenderItemSheet(app, html, data);
+            Handlers.onRenderItemSheet(app, html, data);
         });
 
         /* -------------------------------------------- */
@@ -43,7 +51,7 @@ export class HooksManager {
         /* -------------------------------------------- */
 
         Hooks.on("dropActorSheetData", async (actor, sheet, data) => {
-            ShapeChanger.onDropActorSheetData(actor, sheet, data);
+            Handlers.onDropActorSheetData(actor, sheet, data);
         });
 
         Hooks.on("preDeleteToken", (token, options, user) => {
@@ -55,7 +63,7 @@ export class HooksManager {
                     Dialog.confirm({
                         title: game.i18n.localize("SSC.DeleteTokenWarning.Title"),
                         content: game.i18n.localize(content),
-                        yes: () => { canvas.scene.deleteEmbeddedDocuments("Token", [token.id], {skipDialog: true}); },
+                        yes: () => { canvas.scene.deleteEmbeddedDocuments("Token", [token.id], { skipDialog: true }); },
                         no: () => { },
                         defaultYes: false
                     });

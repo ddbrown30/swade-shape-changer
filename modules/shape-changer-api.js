@@ -3,7 +3,7 @@ import * as SSC_CONFIG from "./ssc-config.js";
 import { Utils } from "./utils.js";
 
 /**
- * API functions for interacting with Coins
+ * API functions for controlling the shape change
  */
 export class ShapeChangerAPI {
 
@@ -62,7 +62,7 @@ export class ShapeChangerAPI {
             const typeChoice = $(html).find("select[name='changeType'").find("option:selected").val();
             const animalSmarts = $(html).find("input[id='animal-smarts'");
 
-            ShapeChanger.createTokenWithActor(tokenToTransform, selectedShape.shapeActor, typeChoice, animalSmarts[0].checked, raise);
+            ShapeChanger.changeTokenIntoActor(tokenToTransform, selectedShape.shapeActor, typeChoice, animalSmarts[0].checked, raise);
         }
 
         new Dialog({
@@ -93,7 +93,6 @@ export class ShapeChangerAPI {
      * @param {Token} createdToken //The token to revert
      */
     static async revertShape(createdToken) {
-        let createdActor = createdToken.actor;
         let originalTokenId = createdToken.document.getFlag(SSC_CONFIG.NAME, SSC_CONFIG.FLAGS.originalToken);
         if (!originalTokenId) {
             Utils.showNotification("error", game.i18n.localize("SSC.Errors.NotAChangedToken"));
@@ -106,48 +105,6 @@ export class ShapeChangerAPI {
             return;
         }
 
-        let originalActor = originalToken.actor;
-
-        await canvas.scene.updateEmbeddedDocuments("Token", [{
-            _id: originalToken.id,
-            x: createdToken.x,
-            y: createdToken.y,
-            "hidden": false
-        }]);
-
-        let actorUpdateData = {
-            "system.bennies.value": createdActor.system.bennies.value,
-            "system.wounds.value": createdActor.system.wounds.value,
-            "system.fatigue.value": createdActor.system.fatigue.value
-        };
-        await originalActor.update(actorUpdateData);
-
-        //We're no longer a change source
-        await originalToken.document.setFlag(SSC_CONFIG.NAME, SSC_CONFIG.FLAGS.isChangeSource, false);
-
-        //Remove all the existing temporary effects from the original actor
-        //We're going to copy all the ones from the created actor and we're assuming that is the correct state
-        let effectsToDelete = originalActor.effects.filter(effect => effect.isTemporary);
-        const effectIdsToDelete = effectsToDelete.map(e => e.id);
-        await originalActor.deleteEmbeddedDocuments("ActiveEffect", effectIdsToDelete);
-
-        let effectsToAdd = createdActor.effects.filter(effect => effect.isTemporary);
-        await originalActor.createEmbeddedDocuments("ActiveEffect", effectsToAdd);
-
-        //Swap the combatants back
-        if (createdToken.combatant) {
-            await createdToken.combatant.combat.createEmbeddedDocuments("Combatant", [{
-                tokenId: originalToken.id,
-                sceneId: originalToken.parent.id,
-                actorId: originalToken.actorId,
-                initiative: createdToken.combatant.initiative,
-                flags: createdToken.combatant.flags
-            }]);
-
-            await createdToken.combatant.combat.deleteEmbeddedDocuments("Combatant", [createdToken.combatant.id]);
-        }
-
-        //Delete the created token
-        await canvas.scene.deleteEmbeddedDocuments("Token", [createdToken.id], {skipDialog: true});
+        await ShapeChanger.revertChangeForToken(createdToken, originalToken);
     }
 }

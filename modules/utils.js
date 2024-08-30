@@ -58,7 +58,6 @@ export class Utils {
      */
     static async loadTemplates() {
         const templates = [
-            `${SSC_CONFIG.PATH}/templates/partials/coin-config-item.hbs`
         ];
         await loadTemplates(templates)
     }

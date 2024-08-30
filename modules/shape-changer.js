@@ -3,167 +3,6 @@ import { Utils } from "./utils.js";
 
 export class ShapeChanger {
 
-    static openTab = false;
-    static activeTab;
-
-    /* -------------------------------------------- */
-    /*                   Handlers                   */
-    /* -------------------------------------------- */
-
-    /**
-     */
-    static async onReady() {
-    }
-
-    /**
-     * Pre Update Item handler
-     * @param {*} app
-     * @param {*} html
-     * @param {*} data
-     */
-    static async onPreUpdateItem(app, html, data) {
-        if (!Utils.isShapeChangePower(app)) {
-            return;
-        }
-
-        //If we're making a change to the shape change power, we need to save the current tab so that it doesn't accidentally switch during the render
-        ShapeChanger.openTab = true;
-        ShapeChanger.activeTab = app._sheet._tabs?.[0]?.active;
-    }
-
-    /**
-     * Render Item Sheet handler
-     * @param {*} app
-     * @param {*} html
-     * @param {*} data
-     */
-    static async onRenderItemSheet(app, html, data) {
-        let item = app.object;
-        if (!Utils.isShapeChangePower(item)) {
-            return;
-        }
-
-        //Local function for handling actors being dropped on the shape change item sheet
-        async function onDrop(event) {
-            const data = TextEditor.getDragEventData(event);
-            if (data.type == "Actor") {
-                ShapeChanger.addActorToShapeChangePower(data, this);
-            }
-        }
-
-        //Add the drop binding to the item sheet
-        const dragDrop = new DragDrop({
-            dragSelector: null,
-            dropSelector: null,
-            callbacks: {
-                drop: onDrop.bind(item)
-            }
-        });
-        dragDrop.bind(app.form);
-
-        ShapeChanger.addTabToShapeChangeSheet(html, item);
-    }
-
-    /**
-     * Adds a new tab to the shape change power sheet that displays our list of shapes
-     * @param {*} html
-     * @param {Item} power //The shape change power item
-     */
-    static async addTabToShapeChangeSheet(html, power) {
-        let shapes = power.getFlag(SSC_CONFIG.NAME, SSC_CONFIG.FLAGS.shapes) ?? [];
-        let shapeData = [];
-        for (let shape of shapes) {
-            const shapeActor = await fromUuid(shape);
-            shapeData.push({ name: shapeActor.name, img: shapeActor.img, uuid: shape });
-        }
-
-        shapeData.sort((a, b) => a.name.localeCompare(b.name));
-
-        const templateData = { shapes: shapeData, isOwner: power.isOwner };
-        const content = await renderTemplate(SSC_CONFIG.DEFAULT_CONFIG.templates.shapesTab, templateData);
-
-        $('.tabs', html).append($('<a>').addClass("item").attr("data-tab", "shapes").html(game.i18n.localize('SSC.ShapesTab.Tab')));
-        $('<section>').addClass("tab shapes").attr('data-tab', 'shapes').html(content).insertAfter($('.tab:last', html));
-
-        //Event handler for the actor
-        html.find("input.actor-button").click(ev => {
-            let shapes = power.getFlag(SSC_CONFIG.NAME, SSC_CONFIG.FLAGS.shapes);
-            let shape = shapes.find(e => e == ev.currentTarget.dataset.shapeId);
-            const shapeActor = fromUuidSync(shape);
-            shapeActor.ownership[game.user.id] = shapeActor.ownership[game.user.id] ?? 2;
-            shapeActor.sheet.render(true);
-        });
-
-        //Event handler for the delete buttons
-        html.find("[class='shape-delete']").click(ev => {
-            let shapes = power.getFlag(SSC_CONFIG.NAME, SSC_CONFIG.FLAGS.shapes);
-            shapes = shapes.filter(e => e !== ev.currentTarget.dataset.shapeId);
-            power.setFlag(SSC_CONFIG.NAME, SSC_CONFIG.FLAGS.shapes, shapes);
-        });
-
-        //This hack ensures the correct tab stays open when the sheet renders
-        if (ShapeChanger.openTab) {
-            power.sheet._tabs?.[0]?.activate?.(ShapeChanger.activeTab);
-            ShapeChanger.openTab = false;
-        }
-    }
-
-    /**
-     * Adds an actor to the list of shapes on the shape change power
-     * @param {*} html
-     * @param {Item} power //The shape change power item
-     */
-    static addActorToShapeChangePower(data, power) {
-        if (data.uuid.startsWith("Compendium")) {
-            //We don't support using actors directly from the compendium
-            //Show a warning popup and return
-            new Dialog({
-                title: game.i18n.localize("SSC.CompendiumWarning.Title"),
-                content: game.i18n.localize("SSC.CompendiumWarning.Body"),
-                buttons: { ok: { label: game.i18n.localize("SSC.Okay") } }
-            }).render(true);
-            return;
-        }
-
-        let shapes = power.getFlag(SSC_CONFIG.NAME, SSC_CONFIG.FLAGS.shapes);
-        shapes = shapes ? shapes : [];
-        if (shapes.includes(data.uuid)) {
-            //This actor is already in our list
-            return;
-        }
-
-        if (power.actor && data.uuid == power.actor.uuid) {
-            //No reason to add ourself
-            return;
-        }
-
-        //Add the new actor to the powers flags
-        shapes.push(data.uuid);
-        power.setFlag(SSC_CONFIG.NAME, SSC_CONFIG.FLAGS.shapes, shapes);
-    }
-
-    /**
-     * DropActorSheetData handler
-     * Asks the player if they'd like to forward the drop to the shape change power
-     * @param {*} app
-     * @param {*} html
-     * @param {*} data
-     */
-    static async onDropActorSheetData(actor, sheet, data) {
-        if (data.type == "Actor") {
-            const power = actor.items.find((item) => item.type == "power" && item.system.swid == "shape-change");
-            if (power) {
-                Dialog.confirm({
-                    title: game.i18n.localize("SSC.ActorSheetDropDialog.Title"),
-                    content: game.i18n.localize("SSC.ActorSheetDropDialog.Body"),
-                    yes: () => { ShapeChanger.addActorToShapeChangePower(data, power); },
-                    no: () => { },
-                    defaultYes: true
-                });
-            }
-        }
-    }
-
     /**
      * Creates a new token based on an actor and configures it following the rules for the shape change power
      * @param {Token} originalToken //The token being transformed
@@ -172,7 +11,7 @@ export class ShapeChanger {
      * @param {Boolean} animalSmarts //If true, the smarts on the new actor wil be marked as animal
      * @param {Boolean} raise //If true, make modifications as if the power was cast with a raise
      */
-    static async createTokenWithActor(originalToken, actorToCreate, typeChoice, animalSmarts, raise) {
+    static async changeTokenIntoActor(originalToken, actorToCreate, typeChoice, animalSmarts, raise) {
         const originalActor = originalToken.actor;
         const newTokenDoc = await actorToCreate.getTokenDocument({
             x: originalToken.x,
@@ -180,16 +19,15 @@ export class ShapeChanger {
             disposition: originalToken.document.disposition,
             name: originalToken.document.name,
             displayName: originalToken.document.displayName,
+            "sight.enabled": originalToken.document.sight.enabled,
+            "delta.ownership": originalToken.actor.ownership, //We want to make sure that the owners of the original token own the new one too
             actorLink: false, //We always want to unlink the actor so that we don't modify the original
         });
-
-        //We want to make sure that the owners of the original token own the new one too
-        newTokenDoc.baseActor.ownership = originalToken.actor.ownership;
 
         //Mark the token as a shape change source so that we warn the user if they try to delete it
         await originalToken.document.setFlag(SSC_CONFIG.NAME, SSC_CONFIG.FLAGS.isChangeSource, true);
 
-        let createdToken = (await canvas.scene.createEmbeddedDocuments("Token", [newTokenDoc.toObject()]))[0];
+        let createdToken = (await canvas.scene.createEmbeddedDocuments("Token", [newTokenDoc.toObject(false)]))[0];
         let createdActor = createdToken.actor;
 
         //Hide the original token and move it to the side
@@ -198,7 +36,7 @@ export class ShapeChanger {
             x: originalToken.x - canvas.grid.size,
             y: originalToken.y - canvas.grid.size,
             "hidden": true
-        }]);
+        }], { animate: false });
 
 
         //The shape change power retains the edges, hindrances, powers, and smarts and spirit linked skills of the original form
@@ -277,17 +115,7 @@ export class ShapeChanger {
         await createdToken.setFlag(SSC_CONFIG.NAME, SSC_CONFIG.FLAGS.originalToken, originalToken.id);
 
         //The new token takes the place of the old in the combat tracker
-        if (originalToken.combatant) {
-            await originalToken.combatant.combat.createEmbeddedDocuments("Combatant", [{
-                tokenId: createdToken.id,
-                sceneId: createdToken.parent.id,
-                actorId: createdToken.actorId,
-                initiative: originalToken.combatant.initiative,
-                flags: originalToken.combatant.flags
-            }]);
-
-            await originalToken.combatant.combat.deleteEmbeddedDocuments("Combatant", [originalToken.combatant.id]);
-        }
+        await ShapeChanger.swapTokensInCombat(originalToken, createdToken);
 
         if (!Utils.getSetting(SSC_CONFIG.SETTING_KEYS.ignoreWoundWarning)) {
             //Check if we have any effects that are modifying the max wounds and warn the user if so
@@ -317,6 +145,89 @@ export class ShapeChanger {
                     default: "ok"
                 }).render(true);
             }
+        }
+    }
+
+    /**
+     * Creates a new token based on an actor and configures it following the rules for the shape change power
+     * @param {Token} createdToken //The token being reverted
+     * @param {Token} originalToken //The original source token to revert to
+     */
+    static async revertChangeForToken(createdToken, originalToken) {
+        let createdActor = createdToken.actor;
+        let originalActor = originalToken.actor;
+
+        await canvas.scene.updateEmbeddedDocuments("Token", [{
+            _id: originalToken.id,
+            x: createdToken.x,
+            y: createdToken.y,
+            "hidden": false
+        }], { animate: false });
+
+        let actorUpdateData = {
+            "system.bennies.value": createdActor.system.bennies.value,
+            "system.wounds.value": createdActor.system.wounds.value,
+            "system.fatigue.value": createdActor.system.fatigue.value
+        };
+        await originalActor.update(actorUpdateData);
+
+        //We're no longer a change source
+        await originalToken.document.setFlag(SSC_CONFIG.NAME, SSC_CONFIG.FLAGS.isChangeSource, false);
+
+        //Remove all the existing temporary effects from the original actor
+        //We're going to copy all the ones from the created actor and we're assuming that is the correct state
+        let effectsToDelete = originalActor.effects.filter(effect => effect.isTemporary);
+        const effectIdsToDelete = effectsToDelete.map(e => e.id);
+        await originalActor.deleteEmbeddedDocuments("ActiveEffect", effectIdsToDelete);
+
+        let effectsToAdd = createdActor.effects.filter(effect => effect.isTemporary);
+        await originalActor.createEmbeddedDocuments("ActiveEffect", effectsToAdd);
+
+        //Swap the combatants back
+        await ShapeChanger.swapTokensInCombat(createdToken, originalToken);
+
+        //Delete the created token
+        await canvas.scene.deleteEmbeddedDocuments("Token", [createdToken.id], {skipDialog: true});
+    }
+
+    /**
+     * Creates a new token based on an actor and configures it following the rules for the shape change power
+     * @param {Token} currentToken //The token that is currently represented in the combat tracker
+     * @param {Token} newToken //The token that should take the place of currentToken in all combat trackers
+     */
+    static async swapTokensInCombat(currentToken, newToken) {
+        let combats = game.combats.filter(c => c.combatants.find(c => c.tokenId == currentToken.id));
+        if (combats.length > 0) {
+            let combatUpdateData = [];
+            for (let combat of combats) {
+                let combatants = combat.combatants.filter(c => c.tokenId == currentToken.id);
+                let combatantUpdateData = [];
+                for (let combatant of combatants) {
+                    combatantUpdateData.push({
+                        _id: combatant.id,
+                        tokenId: newToken.id,
+                        sceneId: currentToken.parent.id,
+                        actorId: newToken.actor.id,
+                    });
+                }
+
+                combatUpdateData.push({
+                    combatId: combat.id,
+                    combatantUpdateData: combatantUpdateData,
+                });
+            }
+            await game.swadeShapeChanger.socket.executeAsGM("updateCombatant", combatUpdateData);
+        }
+    }
+
+    /**
+     * Updates a combatants in a combat
+     * @param {*} combatUpdateData //An array of combats and data about combatants to update
+     */
+    static async updateCombatant(combatUpdateData) {
+        for (let data of combatUpdateData) {
+            let combat = game.combats.find(c => c.id == data.combatId);
+            await combat.updateEmbeddedDocuments("Combatant", data.combatantUpdateData);
         }
     }
 }
