@@ -1,0 +1,30 @@
+{
+  "name": "Revert Shape",
+  "type": "script",
+  "author": "26zedh1nuCLjFH0V",
+  "img": "icons/magic/time/arrows-circling-pink.webp",
+  "scope": "global",
+  "command": "game.swadeShapeChanger.revertShape(token);",
+  "folder": null,
+  "flags": {
+    "core": {}
+  },
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "coreVersion": "12.331",
+    "systemId": "swade",
+    "systemVersion": "4.1.0",
+    "createdTime": 1724992600120,
+    "modifiedTime": 1724992600120,
+    "lastModifiedBy": "26zedh1nuCLjFH0V"
+  },
+  "ownership": {
+    "default": 0,
+    "UQ9simz41eIsn2rv": 3,
+    "26zedh1nuCLjFH0V": 3
+  },
+  "_id": "hHROtagmWUmnqRuc",
+  "sort": 0,
+  "_key": "!macros!hHROtagmWUmnqRuc"
+}
