@@ -1,11 +1,24 @@
 .shapes-list li {
   margin-bottom: 5px;
   display: grid;
+  height: 30px;
+  align-items: center;
+  justify-content: start;
+  grid-template-columns: 40px 1fr;
+}
+
+.shapes-list .shape-name {
+  pointer-events: none;
 }
 
 .shapes-list .item-controls {
   grid-column: 4;
   justify-self: flex-end;
+}
+
+.shapes-list img {
+  width: 30px;
+  border: hidden;
 }
 
 .shapes-list button {

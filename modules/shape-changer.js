@@ -74,7 +74,7 @@ export class ShapeChanger {
         let shapeData = [];
         for (let shape of shapes) {
             const shapeActor = await fromUuid(shape);
-            shapeData.push({ name: shapeActor.name, uuid: shape });
+            shapeData.push({ name: shapeActor.name, img: shapeActor.img, uuid: shape });
         }
 
         shapeData.sort((a, b) => a.name.localeCompare(b.name));

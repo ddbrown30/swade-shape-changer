@@ -2,7 +2,8 @@
     <ul class='shapes-list'>
         {{#each shapes}}
         <li class='item shape'>
-            {{name}}
+            <img src="{{img}}">
+            <a class="shape-name">{{name}}</a>
             <span class='item-controls'>
                 {{#if ../isOwner}}
                 <button type='button' class='item-delete' data-item-id='{{uuid}}' title='{{localize "SWADE.Del"}}'>
