@@ -42,7 +42,8 @@ export class ShapeChangerAPI {
         shapeNames.sort((a, b) => a.name.localeCompare(b.name));
 
         let targets = [];
-        if (game.user.targets.size > 0) {
+        let targetTokens = [];
+        if (game.user.targets.size > 1) {
             for (const target of game.user.targets) {
                 targets.push({ name: target.name, label: target.name, token: target });
             }
@@ -50,6 +51,8 @@ export class ShapeChangerAPI {
 
             const allTargetsString = game.i18n.localize("SSC.ChangeShapeDialog.TargetSelectionAll");
             targets.unshift({ name: allTargetsString, label: allTargetsString, token: null });
+        } else {
+            targetTokens.push(game.user.targets.size == 1 ? game.user.targets.first(): sourceToken);
         }
 
         const templateData = {
@@ -77,15 +80,14 @@ export class ShapeChangerAPI {
             const shapeChoice = $(html).find("select[name='shape'").find("option:selected");
             let selectedShape = shapeNames.find((s) => s.name == shapeChoice.val());
             
-            const targetChoice = $(html).find("select[name='target'").find("option:selected");
-            let target = targets.find((t) => t.name == targetChoice.val());
-            let targetTokens = [];
-            if (!target) {
-                targetTokens.push(sourceToken);
-            } else if (target.token == null) {
-                targetTokens = targets.filter(t => t.token != null).map( t => t.token);
-            } else {
-                targetTokens.push(target.token);
+            if (game.user.targets.size > 1) {
+                const targetChoice = $(html).find("select[name='target'").find("option:selected");
+                let target = targets.find((t) => t.name == targetChoice.val());
+                if (target.token == null) {
+                    targetTokens = targets.filter(t => t.token != null).map( t => t.token);
+                } else {
+                    targetTokens.push(target.token);
+                }
             }
 
             const typeChoice = $(html).find("select[name='changeType'").find("option:selected").val();
