@@ -1,10 +1,11 @@
+# SWADE Shape Changer
 
 This module for Foundry VTT adds functionality to help automate the shape change power. It handles creating and swapping to a new token and transferring edges, hindrances, attributes, skills, powers, bennies, wounds, and fatigue as described by the Shape Change power. If the token is in a combat, the module also automatically updates the combatant with the new token.
 
 > [!WARNING]
 > Due to certain bugs in the swade system, several item sheets and a choice dialog will open during a shape change. As a work around until the system team has a chance to fix it, I'm forcing the windows to close. This means you will see a bunch of windows pop open for a moment before disappearing. This is expected. Please do not enter any issues about this. 
 
-# Usage
+## Usage
 
 In order to use the shape change functionality, the actor you want to transform must have the *shape change* power and shapes must be added to the power. From there, it's as simple as selecting the token and executing the Shape Change macro.
 
@@ -17,6 +18,7 @@ Clicking on the icon for an entry will open the sheet for that actor. This will 
 Clicking the trash icon will delete the shape from the list.
 
 ![Preview](./shapes_list.webp?raw=true)
+
 
 #### Change Shape Macro
 
@@ -34,7 +36,7 @@ Finally, the Success and Raise buttons confirm the shape change. The only differ
 
 To revert back to the original shape, select the transformed token and execute the Revert Shape macro (found in the macro compendium for this module). This will swap back to the original token and will update the bennies, wounds, and fatigue of the original token to match the transformed token.
 
-# Feedback
+## Feedback
 
 Suggestions and feedback are appreciated. You can contact me on Discord at thechemist30 if you have any questions or comments.
 
