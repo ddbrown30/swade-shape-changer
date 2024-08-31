@@ -155,7 +155,7 @@ export class Handlers {
      */
     static async onDropActorSheetData(actor, sheet, data) {
         if (data.type == "Actor") {
-            const power = actor.items.find((item) => item.type == "power" && item.system.swid == "shape-change");
+            const power = actor.items.find((item) => Utils.isShapeChangePower(item));
             if (power) {
                 Dialog.confirm({
                     title: game.i18n.localize("SSC.ActorSheetDropDialog.Title"),

@@ -97,6 +97,9 @@ export class Utils {
             return false;
         }
 
-        return item.system.swid != "shape-change" || item.name.toLowerCase() == "shape change";
+        return item.system.swid == "shape-change" ||
+        item.system.swid == "baleful-polymorph" ||
+        item.name.toLowerCase() == "shape change" ||
+        item.name.toLowerCase() == "baleful-polymorph";
     }
 }

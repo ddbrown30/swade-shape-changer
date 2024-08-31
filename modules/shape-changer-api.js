@@ -22,17 +22,24 @@ export class ShapeChangerAPI {
             return;
         }
 
-        let shapePower = sourceToken.actor.items.find((item) => item.type == "power" && (item.system.swid == "shape-change" || item.name == "Shape Change"));
-        if (!shapePower) {
+        let shapePowers = sourceToken.actor.items.filter((item) => Utils.isShapeChangePower(item));
+        if (!shapePowers) {
             Utils.showNotification("error", game.i18n.localize("SSC.Errors.NoShapeChange"));
             return;
         }
 
-        let shapes = shapePower.getFlag(SSC_CONFIG.NAME, SSC_CONFIG.FLAGS.shapes) ?? [];
+        let shapes = [];
+        for (let shapePower of shapePowers) {
+            shapes = shapes.concat(shapePower.getFlag(SSC_CONFIG.NAME, SSC_CONFIG.FLAGS.shapes) ?? []);
+        }
+
         if (shapes.length == 0) {
             Utils.showNotification("error", game.i18n.localize("SSC.Errors.NoShapes"));
             return;
         }
+        
+        //Remove duplicates
+        shapes = [...new Set(shapes)];
 
         let shapeNames = [];
         for (let shape of shapes) {

@@ -27,7 +27,7 @@
         },
         "ActorSheetDropDialog": {
             "Title": "Add to Shape Change?",
-            "Body": "<p>Add dropped actor to the Shape Change power of this sheet?<br>"
+            "Body": "<p>Add dropped actor to a Shape Change power on this sheet?<br>"
         },
         "CompendiumWarning": {
             "Title": "Compendium Actors",
