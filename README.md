@@ -2,7 +2,7 @@
 This module for Foundry VTT adds functionality to help automate the shape change power. It handles creating and swapping to a new token and transferring edges, hindrances, attributes, skills, powers, bennies, wounds, and fatigue as described by the Shape Change power. If the token is in a combat, the module also automatically updates the combatant with the new token.
 
 > [!WARNING]
-> Due to certain bugs in the swade system, several item sheets and a choice dialog will open during a shape change. As a work around until the system team has a chance to fix it, I'm forcing to windows to close. This means you will see a bunch of windows pop open for a moment before disappearing. This is expected. Please do not enter any issues about this. 
+> Due to certain bugs in the swade system, several item sheets and a choice dialog will open during a shape change. As a work around until the system team has a chance to fix it, I'm forcing the windows to close. This means you will see a bunch of windows pop open for a moment before disappearing. This is expected. Please do not enter any issues about this. 
 
 # Usage
 
