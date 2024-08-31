@@ -32,7 +32,7 @@ export class ShapeChangerAPI {
         let shapeNames = [];
         for (let shape of shapes) {
             const shapeActor = await fromUuid(shape);
-            shapeNames.push({ name: shapeActor.name, label: shapeActor.name, shapeActor: shapeActor });
+            shapeNames.push({ name: shapeActor.name, label: shapeActor.name, uuid: shape });
         }
 
         shapeNames.sort((a, b) => a.name.localeCompare(b.name));
@@ -62,7 +62,11 @@ export class ShapeChangerAPI {
             const typeChoice = $(html).find("select[name='changeType'").find("option:selected").val();
             const animalSmarts = $(html).find("input[id='animal-smarts'");
 
-            ShapeChanger.changeTokenIntoActor(tokenToTransform, selectedShape.shapeActor, typeChoice, animalSmarts[0].checked, raise);
+            if (game.user.hasPermission('TOKEN_CREATE')) {
+                ShapeChanger.changeTokenIntoActor(tokenToTransform.scene.id, tokenToTransform.id, selectedShape.uuid, typeChoice, animalSmarts[0].checked, raise);
+            } else {
+                await game.swadeShapeChanger.socket.executeAsGM("changeTokenIntoActor", tokenToTransform.scene.id, tokenToTransform.id, selectedShape.uuid, typeChoice, animalSmarts[0].checked, raise);
+            }
         }
 
         new Dialog({
@@ -105,6 +109,10 @@ export class ShapeChangerAPI {
             return;
         }
 
-        await ShapeChanger.revertChangeForToken(createdToken, originalToken);
+        if (game.user.hasPermission('TOKEN_CREATE')) {
+            await ShapeChanger.revertChangeForToken(createdToken.scene.id, createdToken.id, originalToken.id);
+        } else {
+            await game.swadeShapeChanger.socket.executeAsGM("revertChangeForToken", createdToken.scene.id, createdToken.id, originalToken.id);
+        }
     }
 }

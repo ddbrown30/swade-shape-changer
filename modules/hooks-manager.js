@@ -29,6 +29,8 @@ export class HooksManager {
 
             game.swadeShapeChanger.socket = socketlib.registerModule(SSC_CONFIG.NAME);
             game.swadeShapeChanger.socket.register("updateCombatant", ShapeChanger.updateCombatant);
+            game.swadeShapeChanger.socket.register("changeTokenIntoActor", ShapeChanger.changeTokenIntoActor);
+            game.swadeShapeChanger.socket.register("revertChangeForToken", ShapeChanger.revertChangeForToken);
         });
 
         Hooks.on("ready", () => {

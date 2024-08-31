@@ -74,7 +74,11 @@ export class Handlers {
         let shapeData = [];
         for (let shape of shapes) {
             const shapeActor = await fromUuid(shape);
-            shapeData.push({ name: shapeActor.name, img: shapeActor.img, uuid: shape });
+            shapeData.push({
+                name: shapeActor ? shapeActor.name : game.i18n.localize('SSC.ShapesTab.InvalidActor'),
+                img: shapeActor?.img,
+                uuid: shape
+            });
         }
 
         shapeData.sort((a, b) => a.name.localeCompare(b.name));
@@ -90,7 +94,6 @@ export class Handlers {
             let shapes = power.getFlag(SSC_CONFIG.NAME, SSC_CONFIG.FLAGS.shapes);
             let shape = shapes.find(e => e == ev.currentTarget.dataset.shapeId);
             const shapeActor = fromUuidSync(shape);
-            //shapeActor.ownership[game.user.id] = shapeActor.ownership[game.user.id] ?? 2;
             shapeActor.sheet._canUserView = function() { return true; };
             shapeActor.sheet.render(true);
         });

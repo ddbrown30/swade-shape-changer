@@ -2,7 +2,8 @@
     "SSC": {
         "ShapesTab": {
             "Tab": "Shapes",
-            "Header": "Shapes"
+            "Header": "Shapes",
+            "InvalidActor": "Invalid Actor"
         },
         "ChangeShapeDialog": {
             "Title": "Shape Change Options",

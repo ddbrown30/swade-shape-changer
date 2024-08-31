@@ -11,21 +11,24 @@ export class ShapeChanger {
      * @param {Boolean} animalSmarts //If true, the smarts on the new actor wil be marked as animal
      * @param {Boolean} raise //If true, make modifications as if the power was cast with a raise
      */
-    static async changeTokenIntoActor(originalToken, actorToCreate, typeChoice, animalSmarts, raise) {
+    static async changeTokenIntoActor(sceneId, originalTokenId, actorToCreateId, typeChoice, animalSmarts, raise) {
+        let originalToken = game.scenes.find(s => s.id == sceneId).tokens.find(t => t.id == originalTokenId);
         const originalActor = originalToken.actor;
+        const actorToCreate = await fromUuid(actorToCreateId);
+
         const newTokenDoc = await actorToCreate.getTokenDocument({
             x: originalToken.x,
             y: originalToken.y,
-            disposition: originalToken.document.disposition,
-            name: originalToken.document.name,
-            displayName: originalToken.document.displayName,
-            "sight.enabled": originalToken.document.sight.enabled,
+            disposition: originalToken.disposition,
+            name: originalToken.name,
+            displayName: originalToken.displayName,
+            "sight.enabled": originalToken.sight.enabled,
             "delta.ownership": originalToken.actor.ownership, //We want to make sure that the owners of the original token own the new one too
             actorLink: false, //We always want to unlink the actor so that we don't modify the original
         });
 
         //Mark the token as a shape change source so that we warn the user if they try to delete it
-        await originalToken.document.setFlag(SSC_CONFIG.NAME, SSC_CONFIG.FLAGS.isChangeSource, true);
+        await originalToken.setFlag(SSC_CONFIG.NAME, SSC_CONFIG.FLAGS.isChangeSource, true);
 
         let createdToken = (await canvas.scene.createEmbeddedDocuments("Token", [newTokenDoc.toObject(false)]))[0];
         let createdActor = createdToken.actor;
@@ -44,9 +47,9 @@ export class ShapeChanger {
         //We skip anything marked as grantedBy as those will be removed or granted again automatically if needed
 
         //Edges, hindrances, and powers are not kept
-        let itemsToRemove = createdActor.items.filter(item => {
+        let itemsToRemove = createdActor.items.filter(item =>
             (item.type == "edge" || item.type == "hindrance" || item.type == "power") && !item.grantedBy
-        });
+        );
 
         //Smarts and spirit linked skills are not kept
         itemsToRemove = itemsToRemove.concat(createdActor.items.filter(item =>
@@ -153,8 +156,10 @@ export class ShapeChanger {
      * @param {Token} createdToken //The token being reverted
      * @param {Token} originalToken //The original source token to revert to
      */
-    static async revertChangeForToken(createdToken, originalToken) {
+    static async revertChangeForToken(sceneId, createdTokenId, originalTokenId) {
+        let createdToken = game.scenes.find(s => s.id == sceneId).tokens.find(t => t.id == createdTokenId);
         let createdActor = createdToken.actor;
+        let originalToken = game.scenes.find(s => s.id == sceneId).tokens.find(t => t.id == originalTokenId);
         let originalActor = originalToken.actor;
 
         await canvas.scene.updateEmbeddedDocuments("Token", [{
@@ -172,7 +177,7 @@ export class ShapeChanger {
         await originalActor.update(actorUpdateData);
 
         //We're no longer a change source
-        await originalToken.document.setFlag(SSC_CONFIG.NAME, SSC_CONFIG.FLAGS.isChangeSource, false);
+        await originalToken.setFlag(SSC_CONFIG.NAME, SSC_CONFIG.FLAGS.isChangeSource, false);
 
         //Remove all the existing temporary effects from the original actor
         //We're going to copy all the ones from the created actor and we're assuming that is the correct state
