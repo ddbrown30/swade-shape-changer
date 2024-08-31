@@ -5,6 +5,7 @@ export const SHORT_TITLE = "SSC";
 
 export const PATH = "modules/swade-shape-changer";
 
+export const SUCC_SHAPE_CHANGE = "shape-change";
 
 export const DEFAULT_CONFIG = {
     templates: {
@@ -25,5 +26,6 @@ export const FLAGS = {
 
 export const SETTING_KEYS = {
     ignoreWoundWarning: "ignoreWoundWarning",
+    useSUCC: "useSUCC",
 }
 

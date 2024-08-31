@@ -3,7 +3,10 @@
 This module for Foundry VTT adds functionality to help automate the shape change power. It handles creating and swapping to a new token and transferring edges, hindrances, attributes, skills, powers, bennies, wounds, and fatigue as described by the Shape Change power. If the token is in a combat, the module also automatically updates the combatant with the new token.
 
 > [!WARNING]
-> Due to certain bugs in the swade system, several item sheets and a choice dialog will open during a shape change. As a work around until the system team has a chance to fix it, I'm forcing the windows to close. This means you will see a bunch of windows pop open for a moment before disappearing. This is expected. Please do not enter any issues about this. 
+> Due to certain bugs in the swade system, several item sheets and a choice dialog will open during a shape change. As a work around until the system team has a chance to fix it, I'm forcing the windows to close. This means you will see a bunch of windows pop open for a moment before disappearing. This is expected. Please do not enter any issues about this.
+
+> [!TIP]
+> If you have the [SUCC module](https://foundryvtt.com/packages/succ) installed with shape change enabled in the Default Conditions settings, the condition will be automatically added and removed when executing shape changes.
 
 ## Usage
 
@@ -19,10 +22,9 @@ Clicking the trash icon will delete the shape from the list.
 
 ![Preview](./shapes_list.webp?raw=true)
 
-
 #### Change Shape Macro
 
-To trigger a shape change, select the token that you wish to use shape change from. You can optionally select one or more targets (shortcut T by default). If no targets are selected, it will default to targetting the source token. Next click the Change Shape macro (found in the macro compendium for this module). This will show the following dialog:
+To trigger a shape change, select the token that you wish to use shape change from. You can optionally select one or more targets (shortcut T by default). If no targets are selected, it will default to targetting the source token. Next click the Change Shape macro (found in the macro compendium for this module) which will display the options dialog.
 
 ![Preview](./change_dialog.webp?raw=true)
 
@@ -30,6 +32,7 @@ Target Shape is the shape that you want the target(s) to transform into. This is
 Target Token (if shown) allows you to select which token you wish to target. This option only appears if more than one token is targeted.
 Change Type contains a choice of either Shape Change or Polymorph. The only difference between the two is that Shape Change will also increase the Strength and Vigor of the new token on a raise.
 If Set Animal Smarts is checked, the new token will have their Smarts marked as Animal.
+If Long Duration is checked, the shape change condition will have a duration of 100 rounds (which might as well be infinite). This option will only appear if SUCC support is enabled.
 Finally, the Success and Raise buttons confirm the shape change. The only difference between the two is that a raise will also increase the Strength and Vigor of the new token if Shape Change was the selected Change Type. 
 
 #### Revert Shape Macro

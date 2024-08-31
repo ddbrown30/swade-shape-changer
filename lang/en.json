@@ -12,6 +12,7 @@
             "TargetSelectionAll": "All Targets",
             "ShapeChangeTypesLabel": "Change Type",
             "AnimalSmartsCheckbox": "Set Animal Smarts",
+            "DurationCheckbox": "Use Long Duration",
             "ShapeChangeTypes": {
                 "Base": "Shape Change",
                 "Polymorph": "Polymorph"
@@ -45,8 +46,20 @@
             "NotAChangedToken": "Selected token was not created by the shape change module.",
             "OriginalTokenNotFound": "The original token no longer exists in the scene. You will have to revert manually."
         },
+        "SUCCWarning": {
+            "Title": "SUCC Not Configured",
+            "Body": "<p>The SUCC module is installed and SUCC support is enabled in the options for SWADE Shape Changer but the shape change condition has not been enabled in the SUCC settings.<p>To fix this, open the SUCC settings, open the Default Conditions menu, select the Expanded Powers tab, and enable Shape Change.<p>Alternatively, you can disable the SUCC support setting in this module.<p><br>",
+            "SUCCOptionsButton": "Open SUCC Settings",
+            "DisableSupportButton": "Disable SUCC Support"
+        },
+        "SUCCDisableConfirmation": {
+            "Title": "SUCC Support Disabled",
+            "Body": "<p>SUCC support has been disabled. You can reenable this at any time from the SWADE Shape Changer options.<p><br>"
+        },
 
         "Settings": {
+            "UseSUCCName": "Enable SUCC Support",
+            "UseSUCCHint": "Use SWADE Ultimate Condition Changer to add/remove a shape change condition executing a shape change. Requires the shape change condition to be enabled in SUCC."
         }
     },
     "SSC.Yes": "Yes",

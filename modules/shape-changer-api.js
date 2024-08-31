@@ -68,7 +68,9 @@ export class ShapeChangerAPI {
             targets: targets,
             target: targets[0]?.name,
             changeTypes: SSC_CONFIG.DEFAULT_CONFIG.changeTypes,
-            changeType: "base" };
+            changeType: "base",
+            useSUCC: Utils.useSUCC()
+        };
         const content = await renderTemplate(SSC_CONFIG.DEFAULT_CONFIG.templates.changeShapeDialog, templateData);
 
         //Local function to process the dialog confirmation
@@ -99,6 +101,7 @@ export class ShapeChangerAPI {
 
             const typeChoice = $(html).find("select[name='changeType'").find("option:selected").val();
             const animalSmarts = $(html).find("input[id='animal-smarts'");
+            const longDuration = $(html).find("input[id='duration'");
 
             for (let targetToken of targetTokens) {
                 await game.swadeShapeChanger.socket.executeAsGM(
@@ -108,6 +111,7 @@ export class ShapeChangerAPI {
                     selectedShape.uuid,
                     typeChoice,
                     animalSmarts[0].checked,
+                    !!(longDuration?.length && longDuration[0].checked),
                     raise);
             }
         }

@@ -33,6 +33,10 @@ export class HooksManager {
             game.swadeShapeChanger.socket.register("revertChangeForToken", ShapeChanger.revertChangeForToken);
         });
 
+        Hooks.once("succReady", () => {
+            Utils.validateSUCCConfig();
+        });
+
         Hooks.on("ready", () => {
             Handlers.onReady();
         });

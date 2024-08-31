@@ -102,4 +102,42 @@ export class Utils {
         item.name.toLowerCase() == "shape change" ||
         item.name.toLowerCase() == "baleful-polymorph";
     }
+
+    static useSUCC() {
+        return game.modules.get('succ')?.active &&
+        Utils.getSetting(SSC_CONFIG.SETTING_KEYS.useSUCC) &&
+        game.succ.getCondition(SSC_CONFIG.SUCC_SHAPE_CHANGE);
+    }
+
+    static validateSUCCConfig() {
+        if (Utils.getSetting(SSC_CONFIG.SETTING_KEYS.useSUCC) &&
+            !game.succ.getCondition(SSC_CONFIG.SUCC_SHAPE_CHANGE)) {
+            //SUCC is enabled but the shape change condition is not
+            //Show a warning to the user and allow them to disable the option
+            new Dialog({
+                title: game.i18n.localize("SSC.SUCCWarning.Title"),
+                content: game.i18n.localize("SSC.SUCCWarning.Body"),
+                buttons: {
+                    ok: { label: game.i18n.localize("SSC.Okay") },
+                    openOptions: {
+                        label: game.i18n.localize("SSC.SUCCWarning.SUCCOptionsButton"),
+                        callback: (html) => {
+                            game.settings.sheet.render(true, {activeCategory: "succ"});
+                        }
+                    },
+                    disable: {
+                        label: game.i18n.localize("SSC.SUCCWarning.DisableSupportButton"),
+                        callback: (html) => {
+                            Utils.setSetting(SSC_CONFIG.SETTING_KEYS.useSUCC, false);
+                            Dialog.prompt({
+                                title: game.i18n.localize("SSC.SUCCDisableConfirmation.Title"),
+                                content: game.i18n.localize("SSC.SUCCDisableConfirmation.Body")
+                            });
+                        }
+                    }
+                },
+                default: "ok"
+            }, {width: 500}).render(true);
+        }
+    }
 }

@@ -13,7 +13,7 @@ export class ShapeChanger {
      * @param {Boolean} animalSmarts //If true, the smarts on the new actor wil be marked as animal
      * @param {Boolean} raise //If true, make modifications as if the power was cast with a raise
      */
-    static async changeTokenIntoActor(sceneId, originalTokenId, actorToCreateId, typeChoice, animalSmarts, raise) {
+    static async changeTokenIntoActor(sceneId, originalTokenId, actorToCreateId, typeChoice, animalSmarts, longDuration, raise) {
         let originalToken = game.scenes.find(s => s.id == sceneId).tokens.find(t => t.id == originalTokenId);
         const originalActor = originalToken.actor;
         const actorToCreate = await fromUuid(actorToCreateId);
@@ -91,13 +91,14 @@ export class ShapeChanger {
         //Copy over any temporary effects
         //We're not copying permanent effects as there is a high chance that we don't want them. If someone wants them, they can drag them over manually
         let effectsToAdd = originalActor.effects.filter(effect => effect.isTemporary);
-        createdActor.createEmbeddedDocuments("ActiveEffect", effectsToAdd);
+        createdActor.createEmbeddedDocuments("ActiveEffect", effectsToAdd, { render: false });
 
         //The created actor keeps their smarts, spirit, and wounds
         let actorUpdateData = {
+            name: originalActor.name,
             "system.attributes.smarts": originalActor.system.attributes.smarts,
             "system.attributes.spirit": originalActor.system.attributes.spirit,
-            "system.bennies.value": originalActor.system.bennies.value,
+            "system.bennies": originalActor.system.bennies,
             "system.wounds": originalActor.system.wounds,
             "system.fatigue": originalActor.system.fatigue,
             "system.details.autoCalcToughness": true,
@@ -117,6 +118,11 @@ export class ShapeChanger {
         }
 
         await createdActor.update(actorUpdateData);
+
+        if (Utils.useSUCC()) {
+            let duration = longDuration ? 100 : undefined;
+            await game.succ.addCondition(SSC_CONFIG.SUCC_SHAPE_CHANGE, createdToken, { duration });
+        }
 
         //Record our original token so we can use it to revert later
         await createdToken.setFlag(SSC_CONFIG.NAME, SSC_CONFIG.FLAGS.originalToken, originalToken.id);
@@ -187,10 +193,13 @@ export class ShapeChanger {
         //We're going to copy all the ones from the created actor and we're assuming that is the correct state
         let effectsToDelete = originalActor.effects.filter(effect => effect.isTemporary);
         const effectIdsToDelete = effectsToDelete.map(e => e.id);
-        await originalActor.deleteEmbeddedDocuments("ActiveEffect", effectIdsToDelete);
+        await originalActor.deleteEmbeddedDocuments("ActiveEffect", effectIdsToDelete, { render: false });
+        
+        //We're removing the shape change condition here rather than just not adding it below so that it will process macros and output to chat
+        await game.succ.removeCondition(SSC_CONFIG.SUCC_SHAPE_CHANGE, createdToken);
 
         let effectsToAdd = createdActor.effects.filter(effect => effect.isTemporary);
-        await originalActor.createEmbeddedDocuments("ActiveEffect", effectsToAdd);
+        await originalActor.createEmbeddedDocuments("ActiveEffect", effectsToAdd, { render: false });
 
         //Swap the combatants back
         await ShapeChanger.swapTokensInCombat(createdToken, originalToken);
