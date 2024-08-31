@@ -40,6 +40,8 @@
             "CreatedBody": "<p>This token is was created as a result of a shape change. Deleting this token will break the ability to revert to the original token.<p>Are you sure you want to delete this token?<br>"
         },
         "Errors": {
+            "NotTrusted": "Current user lacks permission to execute command.",
+            "NoActiveGM": "Command cannot be executed as there is currently no active GM connected to the world.",
             "NoTokenSelected": "No token selected.",
             "NoShapeChange": "Selected token does not have the shape change power.",
             "NoShapes": "Selected token's shape change power contains no shapes. Drag actors to the caster or their shape change power to add shapes.",

@@ -17,6 +17,11 @@ export class ShapeChangerAPI {
      * @param {Token} sourceToken //The token that is the source of the shape change
      */
     static async changeShape(sourceToken) {
+        if (!game.user.isTrusted) {
+            Utils.showNotification("error", game.i18n.localize("SSC.Errors.NotTrusted"));
+            return;
+        }
+
         if (!sourceToken) {
             Utils.showNotification("error", game.i18n.localize("SSC.Errors.NoTokenSelected"));
             return;
@@ -75,6 +80,11 @@ export class ShapeChangerAPI {
 
         //Local function to process the dialog confirmation
         async function handleChangeDialogConfirm(html, raise) {
+            if (!game.users.activeGM) {
+                Utils.showNotification("error", game.i18n.localize("SSC.Errors.NoActiveGM"));
+                return;
+            }
+
             //Check if we're trying to shape change a token that was already changed
             let originalTokenId = sourceToken.document.getFlag(SSC_CONFIG.NAME, SSC_CONFIG.FLAGS.originalToken);
             if (originalTokenId) {
@@ -144,6 +154,16 @@ export class ShapeChangerAPI {
      * @param {Token} createdToken //The token to revert
      */
     static async revertShape(createdToken) {
+        if (!game.user.isTrusted) {
+            Utils.showNotification("error", game.i18n.localize("SSC.Errors.NotTrusted"));
+            return;
+        }
+
+        if (!game.users.activeGM) {
+            Utils.showNotification("error", game.i18n.localize("SSC.Errors.NoActiveGM"));
+            return;
+        }
+
         if (!createdToken) {
             Utils.showNotification("error", game.i18n.localize("SSC.Errors.NoTokenSelected"));
             return;

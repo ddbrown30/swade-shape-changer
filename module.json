@@ -8,12 +8,16 @@
   },
   "packs": [
     {
-      "label": "SWADE Shape Changer Macros",
-      "type": "Macro",
       "name": "swade-shape-changer-macros",
+      "label": "SWADE Shape Changer Macros",
       "path": "packs/macros",
+      "type": "Macro",
       "system": "swade",
-      "package": "swade-shape-changer"
+      "ownership": {
+        "PLAYER": "NONE",
+        "TRUSTED": "OBSERVER",
+        "ASSISTANT": "OWNER"
+      }
     }
   ],
   "version": "0.0.0",
@@ -29,10 +33,20 @@
         }
       }
     ],
-    "requires": [{
-      "id": "socketlib",
-      "type": "module"
-    }]
+    "requires": [
+      {
+        "id": "socketlib",
+        "type": "module",
+        "compatibility": {}
+      }
+    ],
+    "recommends": [
+      {
+        "id": "succ",
+        "type": "module",
+        "compatibility": {}
+      }
+    ]
   },
   "languages": [
     {
