@@ -24,7 +24,7 @@ Clicking the trash icon will delete the shape from the list.
 
 #### Change Shape Macro
 
-To trigger a shape change, select the token that you wish to use shape change from. You can optionally select one or more targets (shortcut T by default). If no targets are selected, it will default to targetting the source token. Next click the Change Shape macro (found in the macro compendium for this module) which will display the options dialog.
+To trigger a shape change, select the token that you wish to use shape change from. You can optionally select one or more targets (shortcut T by default). If no targets are selected, it will default to targetting the source token. Next click the Change Shape macro (found in the macro compendium for this module) which will display the options dialog. This can be done either by a GM or a trusted player.
 
 ![Preview](./change_dialog.webp?raw=true)
 
