@@ -14,10 +14,15 @@ export class ShapeChangerAPI {
 
     /**
      * Opens the dialog for executing a shape change
-     * @param {Token} tokenToTransform //The token to transform
+     * @param {Token} sourceToken //The token that is the source of the shape change
      */
-    static async changeShape(tokenToTransform) {
-        let shapePower = tokenToTransform.actor.items.find((item) => item.type == "power" && (item.system.swid == "shape-change" || item.name == "Shape Change"));
+    static async changeShape(sourceToken) {
+        if (!sourceToken) {
+            Utils.showNotification("error", game.i18n.localize("SSC.Errors.NoTokenSelected"));
+            return;
+        }
+
+        let shapePower = sourceToken.actor.items.find((item) => item.type == "power" && (item.system.swid == "shape-change" || item.name == "Shape Change"));
         if (!shapePower) {
             Utils.showNotification("error", game.i18n.localize("SSC.Errors.NoShapeChange"));
             return;
@@ -34,38 +39,67 @@ export class ShapeChangerAPI {
             const shapeActor = await fromUuid(shape);
             shapeNames.push({ name: shapeActor.name, label: shapeActor.name, uuid: shape });
         }
-
         shapeNames.sort((a, b) => a.name.localeCompare(b.name));
 
-        let shape = shapeNames[0].key;
-        let changeType = "base";
+        let targets = [];
+        if (game.user.targets.size > 0) {
+            for (const target of game.user.targets) {
+                targets.push({ name: target.name, label: target.name, token: target });
+            }
+            targets.sort((a, b) => a.name.localeCompare(b.name));
 
-        const templateData = { shapes: shapeNames, shape: shape, changeTypes: SSC_CONFIG.DEFAULT_CONFIG.changeTypes, changeType: changeType };
+            const allTargetsString = game.i18n.localize("SSC.ChangeShapeDialog.TargetSelectionAll");
+            targets.unshift({ name: allTargetsString, label: allTargetsString, token: null });
+        }
+
+        const templateData = {
+            shapes: shapeNames,
+            shape: shapeNames[0].name,
+            targets: targets,
+            target: targets[0]?.name,
+            changeTypes: SSC_CONFIG.DEFAULT_CONFIG.changeTypes,
+            changeType: "base" };
         const content = await renderTemplate(SSC_CONFIG.DEFAULT_CONFIG.templates.changeShapeDialog, templateData);
 
         //Local function to process the dialog confirmation
         async function handleChangeDialogConfirm(html, raise) {
             //Check if we're trying to shape change a token that was already changed
-            let originalTokenId = tokenToTransform.document.getFlag(SSC_CONFIG.NAME, SSC_CONFIG.FLAGS.originalToken);
+            let originalTokenId = sourceToken.document.getFlag(SSC_CONFIG.NAME, SSC_CONFIG.FLAGS.originalToken);
             if (originalTokenId) {
                 let originalToken = canvas.tokens.get(originalTokenId);
                 if (originalToken) {
                     //This is an existing shape change. Revert back to the original token and then use that token moving forward
-                    await ShapeChangerAPI.revertShape(tokenToTransform);
-                    tokenToTransform = originalToken;
+                    await ShapeChangerAPI.revertShape(sourceToken);
+                    sourceToken = originalToken;
                 }
             }
 
             const shapeChoice = $(html).find("select[name='shape'").find("option:selected");
             let selectedShape = shapeNames.find((s) => s.name == shapeChoice.val());
+            
+            const targetChoice = $(html).find("select[name='target'").find("option:selected");
+            let target = targets.find((t) => t.name == targetChoice.val());
+            let targetTokens = [];
+            if (!target) {
+                targetTokens.push(sourceToken);
+            } else if (target.token == null) {
+                targetTokens = targets.filter(t => t.token != null).map( t => t.token);
+            } else {
+                targetTokens.push(target.token);
+            }
 
             const typeChoice = $(html).find("select[name='changeType'").find("option:selected").val();
             const animalSmarts = $(html).find("input[id='animal-smarts'");
 
-            if (game.user.hasPermission('TOKEN_CREATE')) {
-                ShapeChanger.changeTokenIntoActor(tokenToTransform.scene.id, tokenToTransform.id, selectedShape.uuid, typeChoice, animalSmarts[0].checked, raise);
-            } else {
-                await game.swadeShapeChanger.socket.executeAsGM("changeTokenIntoActor", tokenToTransform.scene.id, tokenToTransform.id, selectedShape.uuid, typeChoice, animalSmarts[0].checked, raise);
+            for (let targetToken of targetTokens) {
+                await game.swadeShapeChanger.socket.executeAsGM(
+                    "changeTokenIntoActor",
+                    targetToken.scene.id,
+                    targetToken.id,
+                    selectedShape.uuid,
+                    typeChoice,
+                    animalSmarts[0].checked,
+                    raise);
             }
         }
 
@@ -97,6 +131,11 @@ export class ShapeChangerAPI {
      * @param {Token} createdToken //The token to revert
      */
     static async revertShape(createdToken) {
+        if (!createdToken) {
+            Utils.showNotification("error", game.i18n.localize("SSC.Errors.NoTokenSelected"));
+            return;
+        }
+
         let originalTokenId = createdToken.document.getFlag(SSC_CONFIG.NAME, SSC_CONFIG.FLAGS.originalToken);
         if (!originalTokenId) {
             Utils.showNotification("error", game.i18n.localize("SSC.Errors.NotAChangedToken"));
@@ -109,10 +148,6 @@ export class ShapeChangerAPI {
             return;
         }
 
-        if (game.user.hasPermission('TOKEN_CREATE')) {
-            await ShapeChanger.revertChangeForToken(createdToken.scene.id, createdToken.id, originalToken.id);
-        } else {
-            await game.swadeShapeChanger.socket.executeAsGM("revertChangeForToken", createdToken.scene.id, createdToken.id, originalToken.id);
-        }
+        await game.swadeShapeChanger.socket.executeAsGM("revertChangeForToken", createdToken.scene.id, createdToken.id, originalToken.id);
     }
 }

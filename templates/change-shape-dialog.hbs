@@ -5,6 +5,14 @@
     </select>
     <br>
     <p>
+     {{#if targets.length }}
+    <label for="target">{{{localize "SSC.ChangeShapeDialog.ShapeSelectionLabel"}}}</label>
+    <select name="target" class="shape" title="">
+        {{selectOptions targets selected=target localize=true valueAttr="name" labelAttr="label"}}
+    </select>
+    <br>
+    <p>
+     {{/if}}
     <label for="changeType">{{{localize "SSC.ChangeShapeDialog.ShapeChangeTypesLabel"}}}</label>
     <select name="changeType" class="shape" title="">
         {{selectOptions changeTypes selected=changeType localize=true}}

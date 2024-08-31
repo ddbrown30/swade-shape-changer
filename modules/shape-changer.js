@@ -3,6 +3,8 @@ import { Utils } from "./utils.js";
 
 export class ShapeChanger {
 
+    static AddingItems = false;
+
     /**
      * Creates a new token based on an actor and configures it following the rules for the shape change power
      * @param {Token} originalToken //The token being transformed
@@ -82,7 +84,9 @@ export class ShapeChanger {
             item.type == "skill" && (item.system.attribute == "spirit" || item.system.attribute == "smarts")
         ));
 
-        createdActor.createEmbeddedDocuments("Item", itemsToAdd, { render: false, renderSheet: false });
+        ShapeChanger.AddingItems = true; //Hack we use to deal with all the pop ups that happen during this step
+        await createdActor.createEmbeddedDocuments("Item", itemsToAdd, { render: false, renderSheet: false });
+        ShapeChanger.AddingItems = false;
 
         //Copy over any temporary effects
         //We're not copying permanent effects as there is a high chance that we don't want them. If someone wants them, they can drag them over manually

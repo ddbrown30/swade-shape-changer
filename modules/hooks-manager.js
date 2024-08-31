@@ -45,7 +45,19 @@ export class HooksManager {
         }))
 
         Hooks.on("renderItemSheet", (app, html, data) => {
+            if (ShapeChanger.AddingItems){
+                //Hack to close all the item sheets that pop up during a shape change
+                app.close({force:true});
+                return;
+            }
             Handlers.onRenderItemSheet(app, html, data);
+        });
+
+        Hooks.on("renderChoiceDialog", (app, html, data) => {
+            if (ShapeChanger.AddingItems){
+                //Hack to close the choice dialog that pops up during a shape change
+                app.close({force:true});
+            }
         });
 
         /* -------------------------------------------- */
