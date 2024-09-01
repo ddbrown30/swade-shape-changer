@@ -115,6 +115,7 @@ export class ShapeChanger {
             "system.wounds.max": originalActor._source.system.wounds.max,
             "system.fatigue.value": originalActor.system.fatigue.value,
             "system.fatigue.max": originalActor.system._source.fatigue.max,
+            "system.powerPoints": originalActor.system.powerPoints,
             "system.details.autoCalcToughness": true,
             "system.details.autoCalcParry": true
         };
@@ -173,7 +174,8 @@ export class ShapeChanger {
         let actorUpdateData = {
             "system.bennies.value": createdActor.system.bennies.value,
             "system.wounds.value": createdActor.system.wounds.value,
-            "system.fatigue.value": createdActor.system.fatigue.value
+            "system.fatigue.value": createdActor.system.fatigue.value,
+            "system.powerPoints": createdActor.system.powerPoints
         };
         await originalActor.update(actorUpdateData);
 
