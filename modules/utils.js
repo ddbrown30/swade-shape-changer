@@ -99,8 +99,10 @@ export class Utils {
 
         return item.system.swid == "shape-change" ||
         item.system.swid == "baleful-polymorph" ||
+        item.system.swid == "monstrous-shape-change" ||
         item.name.toLowerCase() == "shape change" ||
-        item.name.toLowerCase() == "baleful-polymorph";
+        item.name.toLowerCase() == "baleful polymorph" ||
+        item.name.toLowerCase() == "monstrous shape change";
     }
 
     static useSUCC() {
