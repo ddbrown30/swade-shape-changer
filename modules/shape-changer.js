@@ -29,6 +29,8 @@ export class ShapeChanger {
             actorLink: false, //We always want to unlink the actor so that we don't modify the original
         });
 
+        newTokenDoc.actor.type = originalToken.actor.type;
+
         //Mark the token as a shape change source so that we warn the user if they try to delete it
         await originalToken.setFlag(SSC_CONFIG.NAME, SSC_CONFIG.FLAGS.isChangeSource, true);
 
@@ -117,7 +119,8 @@ export class ShapeChanger {
             "system.fatigue.max": originalActor.system._source.fatigue.max,
             "system.powerPoints": originalActor.system.powerPoints,
             "system.details.autoCalcToughness": true,
-            "system.details.autoCalcParry": true
+            "system.details.autoCalcParry": true,
+            "system.wildcard": originalActor.wildcard,
         };
 
         if (animalSmarts) {
