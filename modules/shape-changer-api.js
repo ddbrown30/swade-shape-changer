@@ -85,17 +85,6 @@ export class ShapeChangerAPI {
                 return;
             }
 
-            //Check if we're trying to shape change a token that was already changed
-            let originalTokenId = sourceToken.document.getFlag(SSC_CONFIG.NAME, SSC_CONFIG.FLAGS.originalToken);
-            if (originalTokenId) {
-                let originalToken = canvas.tokens.get(originalTokenId);
-                if (originalToken) {
-                    //This is an existing shape change. Revert back to the original token and then use that token moving forward
-                    await ShapeChangerAPI.revertShape(sourceToken);
-                    sourceToken = originalToken;
-                }
-            }
-
             const shapeChoice = $(html).find("select[name='shape'").find("option:selected");
             let selectedShape = shapeNames.find((s) => s.name == shapeChoice.val());
             
@@ -103,9 +92,28 @@ export class ShapeChangerAPI {
                 const targetChoice = $(html).find("select[name='target'").find("option:selected");
                 let target = targets.find((t) => t.name == targetChoice.val());
                 if (target.token == null) {
-                    targetTokens = targets.filter(t => t.token != null).map( t => t.token);
+                    for (let target of targets) {
+                        if (target.token != null) {
+                            targetTokens.push(target.token);
+                        }
+                    }
                 } else {
                     targetTokens.push(target.token);
+                }
+            }
+
+            //Check if we're trying to shape change a token that was already changed
+            for (let targetToken of targetTokens) {
+                let originalTokenId = targetToken.document.getFlag(SSC_CONFIG.NAME, SSC_CONFIG.FLAGS.originalToken);
+                if (originalTokenId) {
+                    let originalToken = canvas.tokens.get(originalTokenId);
+                    if (originalToken) {
+                        //This is an existing shape change. Revert back to the original token and then use that token moving forward
+                        await ShapeChangerAPI.revertShape(targetToken);
+                        sourceToken = targetToken == sourceToken ? originalToken : sourceToken;
+                        targetTokens = targetTokens.filter(t => t.id != targetToken.id);
+                        targetTokens.push(originalToken);
+                    }
                 }
             }
 
@@ -114,7 +122,7 @@ export class ShapeChangerAPI {
             const longDuration = $(html).find("input[id='duration'");
 
             for (let targetToken of targetTokens) {
-                await game.swadeShapeChanger.socket.executeAsGM(
+                const createdToken = await game.swadeShapeChanger.socket.executeAsGM(
                     "changeTokenIntoActor",
                     targetToken.scene.id,
                     targetToken.id,
@@ -123,6 +131,8 @@ export class ShapeChangerAPI {
                     animalSmarts[0].checked,
                     !!(longDuration?.length && longDuration[0].checked),
                     raise);
+
+                ShapeChanger.validateFinalValues(targetToken, createdToken);
             }
         }
 
@@ -180,6 +190,9 @@ export class ShapeChangerAPI {
             Utils.showNotification("error", game.i18n.localize("SSC.Errors.OriginalTokenNotFound"));
             return;
         }
+
+        //Close the sheet since the actor will be deleted
+        createdToken.actor.sheet.close();
 
         await game.swadeShapeChanger.socket.executeAsGM("revertChangeForToken", createdToken.scene.id, createdToken.id, originalToken.id);
     }

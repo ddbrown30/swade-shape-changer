@@ -21,9 +21,12 @@
             "RaiseButtonName": "Raise",
             "CancelButtonName": "Cancel",
             "MaxWoundNotification": {
-                "Title": "Wound Changes",
-                "Body": "<p>The original actor had one or more active effects modifying max Wounds.<p>Be sure to check the new actor to verify they have the expected number of Wounds.<br>",
-                "IgnoreButton": "Don't Warn Again"
+                "Title": "Max Wound Mismatch",
+                "Body": "<p>The max Wounds value on the original token does not match the max Wounds value on the new token. Please open the new token and adjust the max Wounds manually.<p>I'd also appreciate if you would open an issue on GitHub describing how this happened.<br>"
+            },
+            "MaxFatigueNotification": {
+                "Title": "Max Fatigue Mismatch",
+                "Body": "<p>The max Fatigue value on the original token does not match the max Fatigue value on the new token. Please open the new token and adjust the max Fatigue manually.<p>I'd also appreciate if you would open an issue on GitHub describing how this happened.<br>"
             }
         },
         "ActorSheetDropDialog": {
@@ -58,6 +61,7 @@
             "Title": "SUCC Support Disabled",
             "Body": "<p>SUCC support has been disabled. You can reenable this at any time from the SWADE Shape Changer options.<p><br>"
         },
+        "RaiseEffectName": "Shape Change Raise",
 
         "Settings": {
             "UseSUCCName": "Enable SUCC Support",

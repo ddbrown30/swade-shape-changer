@@ -25,7 +25,6 @@ export const FLAGS = {
 }
 
 export const SETTING_KEYS = {
-    ignoreWoundWarning: "ignoreWoundWarning",
     useSUCC: "useSUCC",
 }
 

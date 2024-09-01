@@ -140,4 +140,13 @@ export class Utils {
             }, {width: 500}).render(true);
         }
     }
+
+    /**
+     * Returns true for effect change keys that modify values that we need to delete during a shape change
+     */
+    static shouldDeleteKey(key) {
+        return key == "system.wounds.max" ||
+        key == "system.fatigue.max" ||
+        key == "system.bennies.max";
+    }
 }

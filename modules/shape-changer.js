@@ -72,6 +72,17 @@ export class ShapeChanger {
             await item.delete();
         }
 
+        //We've removed everything we're going to remove from the new actor so check if we still have any AEs that modify unsupported values and remove them
+        let effects = createdActor.appliedEffects.filter(ae => ae.changes.find(c => Utils.shouldDeleteKey(c.key)));
+        for (let effect of effects) {
+            effect.changes = effect.changes.filter(c => !Utils.shouldDeleteKey(c.key));
+            if (effect.changes.length == 0) {
+                await effect.delete();
+            } else {
+                await effect.update({ _id: undefined, ...effect });
+            }
+        }
+
         //Now copy over the required items from the original actor
 
         //Edges, hindrances, and powers are carried over
@@ -91,16 +102,19 @@ export class ShapeChanger {
         //Copy over any temporary effects
         //We're not copying permanent effects as there is a high chance that we don't want them. If someone wants them, they can drag them over manually
         let effectsToAdd = originalActor.effects.filter(effect => effect.isTemporary);
-        createdActor.createEmbeddedDocuments("ActiveEffect", effectsToAdd, { render: false });
+        await createdActor.createEmbeddedDocuments("ActiveEffect", effectsToAdd, { render: false });
 
         //The created actor keeps their smarts, spirit, and wounds
         let actorUpdateData = {
             name: originalActor.name,
-            "system.attributes.smarts": originalActor.system.attributes.smarts,
-            "system.attributes.spirit": originalActor.system.attributes.spirit,
-            "system.bennies": originalActor.system.bennies,
-            "system.wounds": originalActor.system.wounds,
-            "system.fatigue": originalActor.system.fatigue,
+            "system.attributes.smarts": originalActor._source.system.attributes.smarts,
+            "system.attributes.spirit": originalActor._source.system.attributes.spirit,
+            "system.bennies.value": originalActor.system.bennies.value,
+            "system.bennies.max": originalActor._source.system.bennies.max,
+            "system.wounds.value": originalActor.system.wounds.value,
+            "system.wounds.max": originalActor._source.system.wounds.max,
+            "system.fatigue.value": originalActor.system.fatigue.value,
+            "system.fatigue.max": originalActor.system._source.fatigue.max,
             "system.details.autoCalcToughness": true,
             "system.details.autoCalcParry": true
         };
@@ -109,15 +123,20 @@ export class ShapeChanger {
             updateDatafoundry.utils.mergeObject(actorUpdateData, { "system.attributes.smarts.animal": true });
         }
 
+        await createdActor.update(actorUpdateData);
+
         //On a raise, we boost strength and vigor
         if (typeChoice == "base" && raise) {
-            foundry.utils.mergeObject(actorUpdateData, {
-                "system.attributes.strength.die.sides": (createdActor.system.attributes.strength.die.sides + 2),
-                "system.attributes.vigor.die.sides": (createdActor.system.attributes.vigor.die.sides + 2)
-            });
+            let raiseEffect = {
+                name: game.i18n.localize("SSC.RaiseEffectName"),
+                img: "icons/magic/control/debuff-energy-hold-levitate-yellow.webp",
+                changes: [
+                    { key: "system.attributes.strength.die.sides", mode: 2, value: 2 },
+                    { key: "system.attributes.vigor.die.sides", mode: 2, value: 2 }
+                ]
+            };
+            await createdActor.createEmbeddedDocuments("ActiveEffect", [raiseEffect], { render: false });
         }
-
-        await createdActor.update(actorUpdateData);
 
         if (Utils.useSUCC()) {
             let duration = longDuration ? 100 : undefined;
@@ -130,35 +149,7 @@ export class ShapeChanger {
         //The new token takes the place of the old in the combat tracker
         await ShapeChanger.swapTokensInCombat(originalToken, createdToken);
 
-        if (!Utils.getSetting(SSC_CONFIG.SETTING_KEYS.ignoreWoundWarning)) {
-            //Check if we have any effects that are modifying the max wounds and warn the user if so
-            let hasMaxWoundChange = false;
-            for (let effect of originalActor.appliedEffects) {
-                for (let change of effect.changes) {
-                    if (change.key == "system.wounds.max") {
-                        hasMaxWoundChange = true;
-                        break;
-                    }
-                }
-            }
-
-            if (hasMaxWoundChange) {
-                new Dialog({
-                    title: game.i18n.localize("SSC.ChangeShapeDialog.MaxWoundNotification.Title"),
-                    content: game.i18n.localize("SSC.ChangeShapeDialog.MaxWoundNotification.Body"),
-                    buttons: {
-                        ok: { label: game.i18n.localize("SSC.Okay") },
-                        ignore: {
-                            label: game.i18n.localize("SSC.ChangeShapeDialog.MaxWoundNotification.IgnoreButton"),
-                            callback: async (html) => {
-                                Utils.setSetting(SSC_CONFIG.SETTING_KEYS.ignoreWoundWarning, true);
-                            }
-                        }
-                    },
-                    default: "ok"
-                }).render(true);
-            }
-        }
+        return createdToken;
     }
 
     /**
@@ -194,7 +185,7 @@ export class ShapeChanger {
         let effectsToDelete = originalActor.effects.filter(effect => effect.isTemporary);
         const effectIdsToDelete = effectsToDelete.map(e => e.id);
         await originalActor.deleteEmbeddedDocuments("ActiveEffect", effectIdsToDelete, { render: false });
-        
+
         //We're removing the shape change condition here rather than just not adding it below so that it will process macros and output to chat
         await game.succ.removeCondition(SSC_CONFIG.SUCC_SHAPE_CHANGE, createdToken);
 
@@ -205,7 +196,7 @@ export class ShapeChanger {
         await ShapeChanger.swapTokensInCombat(createdToken, originalToken);
 
         //Delete the created token
-        await canvas.scene.deleteEmbeddedDocuments("Token", [createdToken.id], {skipDialog: true});
+        await canvas.scene.deleteEmbeddedDocuments("Token", [createdToken.id], { skipDialog: true });
     }
 
     /**
@@ -246,6 +237,26 @@ export class ShapeChanger {
         for (let data of combatUpdateData) {
             let combat = game.combats.find(c => c.id == data.combatId);
             await combat.updateEmbeddedDocuments("Combatant", data.combatantUpdateData);
+        }
+    }
+
+    static async validateFinalValues(targetToken, createdToken) {
+        const createdActor = createdToken.actor ?? game.scenes.get(targetToken.scene.id).tokens.get(createdToken._id).actor;
+        if (targetToken.actor.system.wounds.max != createdActor.system.wounds.max) {
+            foundry.applications.api.DialogV2.prompt({
+                window: { title: game.i18n.localize("SSC.ChangeShapeDialog.MaxWoundNotification.Title") },
+                position: { width: 400 },
+                content: game.i18n.localize("SSC.ChangeShapeDialog.MaxWoundNotification.Body"),
+                rejectClose: false,
+            });
+        }
+        if (targetToken.actor.system.fatigue.max != createdActor.system.fatigue.max) {
+            foundry.applications.api.DialogV2.prompt({
+                window: { title: game.i18n.localize("SSC.ChangeShapeDialog.MaxFatigueNotification.Title") },
+                position: { width: 400 },
+                content: game.i18n.localize("SSC.ChangeShapeDialog.MaxFatigueNotification.Body"),
+                rejectClose: false,
+            });
         }
     }
 }
