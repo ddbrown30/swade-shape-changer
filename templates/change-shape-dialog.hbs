@@ -1,37 +1,53 @@
 <div class='ssc'>
-    <label for="shape">{{{localize "SSC.ChangeShapeDialog.ShapeSelectionLabel"}}}</label>
-    <select name="shape" class="shape" title="">
-        {{selectOptions shapes selected=shape localize=true valueAttr="name" labelAttr="label"}}
-    </select>
+    <form id="change-shape-form">
+        <label for="shape">{{{localize "SSC.ChangeShapeDialog.ShapeSelectionLabel"}}}</label>
+        <select name="shape" class="shape" title="">
+            {{selectOptions shapes selected=shape localize=true valueAttr="name" labelAttr="label"}}
+        </select>
+        <br>
+        <p>
+            {{#if targets.length }}
+            <label for="target">{{{localize "SSC.ChangeShapeDialog.TargetSelectionLabel"}}}</label>
+            <select name="target" class="shape" title="">
+                {{selectOptions targets selected=target localize=true valueAttr="name" labelAttr="label"}}
+            </select>
+            <br>
+        <p>
+            {{/if}}
+            <label for="changeType">{{{localize "SSC.ChangeShapeDialog.ShapeChangeTypesLabel"}}}</label>
+            <select name="changeType" class="shape" title="">
+                {{selectOptions changeTypes selected=changeType localize=true}}
+            </select>
+            <br>
+            {{#if (eq changeType "polymorph") }}
+        <p>
+        <div class="formgroup">
+            <input type="checkbox" id="animal-smarts" style="vertical-align: middle;">
+            <label for="animal-smarts" style="vertical-align: middle;">
+                {{localize "SSC.ChangeShapeDialog.AnimalSmartsCheckbox"}}
+            </label>
+        </div>
+        {{/if}}
+        {{#if useSUCC }}
+        <div class="formgroup">
+            <input type="checkbox" id="duration" style="vertical-align: middle;">
+            <label for="duration" style="vertical-align: middle;">
+                {{localize "SSC.ChangeShapeDialog.DurationCheckbox"}}
+            </label>
+        </div>
+        {{/if}}
+        <p>
+    </form>
+    {{#unless (or useSUCC (eq changeType "polymorph")) }}
     <br>
-    <p>
-     {{#if targets.length }}
-    <label for="target">{{{localize "SSC.ChangeShapeDialog.TargetSelectionLabel"}}}</label>
-    <select name="target" class="shape" title="">
-        {{selectOptions targets selected=target localize=true valueAttr="name" labelAttr="label"}}
-    </select>
-    <br>
-    <p>
-     {{/if}}
-    <label for="changeType">{{{localize "SSC.ChangeShapeDialog.ShapeChangeTypesLabel"}}}</label>
-    <select name="changeType" class="shape" title="">
-        {{selectOptions changeTypes selected=changeType localize=true}}
-    </select>
-    <br>
-    <p>
-    <div class="formgroup">
-        <input type="checkbox" id="animal-smarts" style="vertical-align: middle;">
-        <label for="animal-smarts" style="vertical-align: middle;">
-            {{localize "SSC.ChangeShapeDialog.AnimalSmartsCheckbox"}}
-        </label>
-    </div>
-     {{#if useSUCC }}
-    <div class="formgroup">
-        <input type="checkbox" id="duration" style="vertical-align: middle;">
-        <label for="duration" style="vertical-align: middle;">
-            {{localize "SSC.ChangeShapeDialog.DurationCheckbox"}}
-        </label>
-    </div>
-     {{/if}}
-    <p>
+    {{/unless}}
+    <footer class="form-footer">
+        {{#if (eq changeType "base") }}
+        <button type="button" form="change-shape-form" data-action="success">{{localize "SSC.ChangeShapeDialog.SuccessButtonName"}}</button>
+        <button type="button" form="change-shape-form" data-action="raise">{{localize "SSC.ChangeShapeDialog.RaiseButtonName"}}</button>
+        {{else}}
+        <button type="button" form="change-shape-form" data-action="success">{{localize "SSC.ChangeShapeDialog.ConfirmButtonName"}}</button>
+        {{/if}}
+        <button type="button" form="change-shape-form" data-action="cancel">{{localize "SSC.ChangeShapeDialog.CancelButtonName"}}</button>
+    </footer>
 </div>

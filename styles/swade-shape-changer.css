@@ -54,3 +54,16 @@
 .ssc-dialog footer.form-footer button {
   min-width: fit-content;
 }
+
+.change-shape-dialog footer.form-footer {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.change-shape-dialog footer.form-footer button {
+  min-width: fit-content;
+}
+
+.change-shape-dialog [data-action="configureSheet"], [data-action="copyUuid"] {
+  visibility: hidden;
+}

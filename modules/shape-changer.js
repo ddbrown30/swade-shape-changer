@@ -124,7 +124,7 @@ export class ShapeChanger {
         };
 
         if (animalSmarts) {
-            updateDatafoundry.utils.mergeObject(actorUpdateData, { "system.attributes.smarts.animal": true });
+            foundry.utils.mergeObject(actorUpdateData, { "system.attributes.smarts.animal": true });
         }
 
         await createdActor.update(actorUpdateData);
