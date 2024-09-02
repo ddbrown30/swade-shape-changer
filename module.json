@@ -44,7 +44,10 @@
       {
         "id": "succ",
         "type": "module",
-        "compatibility": {}
+        "compatibility": {
+          "minimum": "4.0.2",
+          "verified": "4.0.2"
+        }
       }
     ]
   },
