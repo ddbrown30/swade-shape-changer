@@ -136,26 +136,27 @@ export class ShapeChangerAPI {
             }
         }
 
-        new Dialog({
-            title: game.i18n.localize("SSC.ChangeShapeDialog.Title"),
+        new foundry.applications.api.DialogV2({
+            window: { title: game.i18n.localize("SSC.ChangeShapeDialog.Title") },
             content: content,
-            buttons: {
-                success: {
+            classes: ["ssc-dialog"],
+            position: { width: 400 },
+            buttons: [
+                {
+                    action: "success",
                     label: game.i18n.localize("SSC.ChangeShapeDialog.SuccessButtonName"),
-                    callback: async (html) => {
-                        handleChangeDialogConfirm(html, false);
-                    }
+                    callback: async (event, button, dialog) => handleChangeDialogConfirm(dialog, false)
                 },
-                raise: {
+                {
+                    action: "raise",
                     label: game.i18n.localize("SSC.ChangeShapeDialog.RaiseButtonName"),
-                    callback: async (html) => {
-                        handleChangeDialogConfirm(html, true);
-                    }
+                    callback: async (event, button, dialog) => handleChangeDialogConfirm(dialog, true)
                 },
-                cancel: {
+                {
+                    action: "cancel",
                     label: game.i18n.localize("SSC.ChangeShapeDialog.CancelButtonName")
                 }
-            }
+            ]
         }).render(true)
     }
 

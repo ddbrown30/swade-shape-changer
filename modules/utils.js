@@ -116,30 +116,36 @@ export class Utils {
             !game.succ.getCondition(SSC_CONFIG.SUCC_SHAPE_CHANGE)) {
             //SUCC is enabled but the shape change condition is not
             //Show a warning to the user and allow them to disable the option
-            new Dialog({
-                title: game.i18n.localize("SSC.SUCCWarning.Title"),
+            new foundry.applications.api.DialogV2({
+                window: { title: game.i18n.localize("SSC.SUCCWarning.Title") },
                 content: game.i18n.localize("SSC.SUCCWarning.Body"),
-                buttons: {
-                    ok: { label: game.i18n.localize("SSC.Okay") },
-                    openOptions: {
-                        label: game.i18n.localize("SSC.SUCCWarning.SUCCOptionsButton"),
-                        callback: (html) => {
-                            game.settings.sheet.render(true, {activeCategory: "succ"});
-                        }
+                position: { width: 500 },
+                classes: ["ssc-dialog"],
+                buttons: [
+                    {
+                        action: "ok",
+                        label: game.i18n.localize("SSC.Okay"),
+                        default: true
                     },
-                    disable: {
+                    {
+                        action: "openOptions",
+                        label: game.i18n.localize("SSC.SUCCWarning.SUCCOptionsButton"),
+                        callback: async (event, button, dialog) => { game.settings.sheet.render(true, {activeCategory: "succ"}); }
+                    },
+                    {
+                        action: "disable",
                         label: game.i18n.localize("SSC.SUCCWarning.DisableSupportButton"),
-                        callback: (html) => {
+                        callback: async (event, button, dialog) => {
                             Utils.setSetting(SSC_CONFIG.SETTING_KEYS.useSUCC, false);
-                            Dialog.prompt({
-                                title: game.i18n.localize("SSC.SUCCDisableConfirmation.Title"),
-                                content: game.i18n.localize("SSC.SUCCDisableConfirmation.Body")
+                            foundry.applications.api.DialogV2.prompt({
+                                window: { title: game.i18n.localize("SSC.SUCCDisableConfirmation.Title") },
+                                content: game.i18n.localize("SSC.SUCCDisableConfirmation.Body"),
+                                position: { width: 400 }
                             });
                         }
                     }
-                },
-                default: "ok"
-            }, {width: 500}).render(true);
+                ]
+            }).render(true);
         }
     }
 

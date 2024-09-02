@@ -250,16 +250,16 @@ export class ShapeChanger {
         if (targetToken.actor.system.wounds.max != createdActor.system.wounds.max) {
             foundry.applications.api.DialogV2.prompt({
                 window: { title: game.i18n.localize("SSC.ChangeShapeDialog.MaxWoundNotification.Title") },
-                position: { width: 400 },
                 content: game.i18n.localize("SSC.ChangeShapeDialog.MaxWoundNotification.Body"),
+                position: { width: 400 },
                 rejectClose: false,
             });
         }
         if (targetToken.actor.system.fatigue.max != createdActor.system.fatigue.max) {
             foundry.applications.api.DialogV2.prompt({
                 window: { title: game.i18n.localize("SSC.ChangeShapeDialog.MaxFatigueNotification.Title") },
-                position: { width: 400 },
                 content: game.i18n.localize("SSC.ChangeShapeDialog.MaxFatigueNotification.Body"),
+                position: { width: 400 },
                 rejectClose: false,
             });
         }

@@ -22,25 +22,25 @@
             "CancelButtonName": "Cancel",
             "MaxWoundNotification": {
                 "Title": "Max Wound Mismatch",
-                "Body": "<p>The max Wounds value on the original token does not match the max Wounds value on the new token. Please open the new token and adjust the max Wounds manually.<p>I'd also appreciate if you would open an issue on GitHub describing how this happened.<br>"
+                "Body": "The max Wounds value on the original token does not match the max Wounds value on the new token. Please open the new token and adjust the max Wounds manually.<p>I'd also appreciate if you would open an issue on GitHub describing how this happened.<br>"
             },
             "MaxFatigueNotification": {
                 "Title": "Max Fatigue Mismatch",
-                "Body": "<p>The max Fatigue value on the original token does not match the max Fatigue value on the new token. Please open the new token and adjust the max Fatigue manually.<p>I'd also appreciate if you would open an issue on GitHub describing how this happened.<br>"
+                "Body": "The max Fatigue value on the original token does not match the max Fatigue value on the new token. Please open the new token and adjust the max Fatigue manually.<p>I'd also appreciate if you would open an issue on GitHub describing how this happened.<br>"
             }
         },
         "ActorSheetDropDialog": {
             "Title": "Add to Shape Change?",
-            "Body": "<p>Add dropped actor to a Shape Change power on this sheet?<br>"
+            "Body": "Add dropped actor to a Shape Change power on this sheet?<br>"
         },
         "CompendiumWarning": {
             "Title": "Compendium Actors",
-            "Body": "<p>Directly using compendium actors is not supported.<p>Please import the actor into your world first and then use the imported actor.<br>"
+            "Body": "Directly using compendium actors is not supported.<br><br>Please import the actor into your world first and then use the imported actor.<br>"
         },
         "DeleteTokenWarning": {
             "Title": "Confirm Delete?",
-            "SourceBody": "<p>This token is marked as the source of a shape change. Deleting this token will break the ability to revert the shape change.<p>Are you sure you want to delete this token?<br>",
-            "CreatedBody": "<p>This token is was created as a result of a shape change. Deleting this token will break the ability to revert to the original token.<p>Are you sure you want to delete this token?<br>"
+            "SourceBody": "This token is marked as the source of a shape change. Deleting this token will break the ability to revert the shape change.<br><br>Are you sure you want to delete this token?<br>",
+            "CreatedBody": "This token is was created as a result of a shape change. Deleting this token will break the ability to revert to the original token.<br><br>Are you sure you want to delete this token?<br>"
         },
         "Errors": {
             "NotTrusted": "Current user lacks permission to execute command.",
@@ -53,13 +53,13 @@
         },
         "SUCCWarning": {
             "Title": "SUCC Not Configured",
-            "Body": "<p>The SUCC module is installed and SUCC support is enabled in the options for SWADE Shape Changer but the shape change condition has not been enabled in the SUCC settings.<p>To fix this, open the SUCC settings, open the Default Conditions menu, select the Expanded Powers tab, and enable Shape Change.<p>Alternatively, you can disable the SUCC support setting in this module.<p><br>",
+            "Body": "The SUCC module is installed and SUCC support is enabled in the options for SWADE Shape Changer but the shape change condition has not been enabled in the SUCC settings.<p>To fix this, open the SUCC settings, open the Default Conditions menu, select the Expanded Powers tab, and enable Shape Change.<p>Alternatively, you can disable the SUCC support setting in this module.<p><br>",
             "SUCCOptionsButton": "Open SUCC Settings",
             "DisableSupportButton": "Disable SUCC Support"
         },
         "SUCCDisableConfirmation": {
             "Title": "SUCC Support Disabled",
-            "Body": "<p>SUCC support has been disabled. You can reenable this at any time from the SWADE Shape Changer options.<p><br>"
+            "Body": "SUCC support has been disabled. You can reenable this at any time from the SWADE Shape Changer options.<br>"
         },
         "RaiseEffectName": "Shape Change Raise",
 

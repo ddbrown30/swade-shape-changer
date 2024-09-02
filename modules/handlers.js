@@ -121,10 +121,11 @@ export class Handlers {
         if (data.uuid.startsWith("Compendium")) {
             //We don't support using actors directly from the compendium
             //Show a warning popup and return
-            new Dialog({
-                title: game.i18n.localize("SSC.CompendiumWarning.Title"),
+            foundry.applications.api.DialogV2.prompt({
+                window: { title: game.i18n.localize("SSC.CompendiumWarning.Title") },
                 content: game.i18n.localize("SSC.CompendiumWarning.Body"),
-                buttons: { ok: { label: game.i18n.localize("SSC.Okay") } }
+                position: { width: 400 },
+                rejectClose: false,
             }).render(true);
             return;
         }
@@ -157,11 +158,11 @@ export class Handlers {
         if (data.type == "Actor") {
             const power = actor.items.find((item) => Utils.isShapeChangePower(item));
             if (power) {
-                Dialog.confirm({
-                    title: game.i18n.localize("SSC.ActorSheetDropDialog.Title"),
+                foundry.applications.api.DialogV2.confirm({
+                    window: { title: game.i18n.localize("SSC.ActorSheetDropDialog.Title") },
                     content: game.i18n.localize("SSC.ActorSheetDropDialog.Body"),
-                    yes: () => { Handlers.addActorToShapeChangePower(data, power); },
-                    no: () => { },
+                    position: { width: 400 },
+                    yes: { callback: (event, button, dialog) => Handlers.addActorToShapeChangePower(data, power) },
                     defaultYes: true
                 });
             }

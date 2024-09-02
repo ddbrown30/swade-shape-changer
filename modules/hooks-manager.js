@@ -78,11 +78,11 @@ export class HooksManager {
                 const originalToken = token.getFlag(SSC_CONFIG.NAME, SSC_CONFIG.FLAGS.originalToken);
                 if (isChangeSource || originalToken) {
                     const content = isChangeSource ? "SSC.DeleteTokenWarning.SourceBody" : "SSC.DeleteTokenWarning.CreatedBody";
-                    Dialog.confirm({
-                        title: game.i18n.localize("SSC.DeleteTokenWarning.Title"),
+                    foundry.applications.api.DialogV2.confirm({
+                        window: { title: game.i18n.localize("SSC.DeleteTokenWarning.Title") },
                         content: game.i18n.localize(content),
-                        yes: () => { canvas.scene.deleteEmbeddedDocuments("Token", [token.id], { skipDialog: true }); },
-                        no: () => { },
+                        position: { width: 400 },
+                        yes: { callback: (event, button, dialog) => canvas.scene.deleteEmbeddedDocuments("Token", [token.id], { skipDialog: true }) },
                         defaultYes: false
                     });
                     return false;

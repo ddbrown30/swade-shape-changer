@@ -46,3 +46,11 @@
   margin: 2px;
   padding: 2px;
 }
+
+.ssc-dialog footer.form-footer {
+  justify-content: center;
+}
+
+.ssc-dialog footer.form-footer button {
+  min-width: fit-content;
+}
