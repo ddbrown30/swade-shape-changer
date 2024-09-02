@@ -30,14 +30,14 @@ To trigger a shape change, select the token that you wish to use shape change fr
     <img align=top src="./shape_change_dialog.webp"/>
     <img align=top src="./polymorph_dialog.webp"/>
 <div>
-<p></p>
+<p>
 
-Target Shape is the shape that you want the target(s) to transform into. This is populated by the list of shapes in the shape change power of the selected token.<br>
-Target Token (if shown) allows you to select which token you wish to target. This option only appears if more than one token is targeted.<br>
-Change Type contains a choice of either Shape Change or Polymorph. The only difference between the two is that Shape Change will also increase the Strength and Vigor of the new token on a raise.<br>
-If Set Animal Smarts is checked, the new token will have their Smarts marked as Animal. This option will only appear when Polymorph is selected.<br>
-If Long Duration is checked, the shape change condition will have a duration of 100 rounds (which might as well be infinite). This option will only appear if SUCC support is enabled.<br>
-Finally, the Success and Raise buttons confirm the shape change. The only difference between the two is that a raise will also increase the Strength and Vigor of the new token. These buttons will only be visible when Shape Change is selected; they will be replaced with a Confirm button when Polymorph is selected.<br>
+* Target Shape is the shape that you want the target(s) to transform into. This is populated by the list of shapes in the shape change power of the selected token.
+* Target Token (if shown) allows you to select which token you wish to target. This option only appears if more than one token is targeted.
+* Change Type contains a choice of either Shape Change or Polymorph. The only difference between the two is that Shape Change will also increase the Strength and Vigor of the new token on a raise.
+* If Set Animal Smarts is checked, the new token will have their Smarts marked as Animal. This option will only appear when Polymorph is selected.
+* If Long Duration is checked, the shape change condition will have a duration of 100 rounds (which might as well be infinite). This option will only appear if SUCC support is enabled.
+* Finally, the Success and Raise buttons confirm the shape change. The only difference between the two is that a raise will also increase the Strength and Vigor of the new token. These buttons will only be visible when Shape Change is selected; they will be replaced with a Confirm button when Polymorph is selected.
 
 #### Revert Shape Macro
 
