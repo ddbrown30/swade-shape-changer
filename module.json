@@ -28,8 +28,8 @@
         "type": "system",
         "manifest": "https://gitlab.com/api/v4/projects/16269883/packages/generic/swade/latest/system.json",
         "compatibility": {
-          "minimum": "4.1.0",
-          "verified": "4.1.0"
+          "minimum": "4.1.1",
+          "verified": "4.1.1"
         }
       }
     ],
