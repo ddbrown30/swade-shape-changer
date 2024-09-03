@@ -10,7 +10,7 @@ This module for Foundry VTT adds functionality to help automate the shape change
 
 ## Usage
 
-In order to use the shape change functionality, the actor you want to transform must have the *shape change* power and shapes must be added to the power. From there, it's as simple as selecting the token and executing the Shape Change macro.
+In order to use the shape change functionality, the actor you want to transform must have the *shape change*, *polymorph*, or *monstrous shape change* power and shapes must be added to the power. From there, it's as simple as selecting the token and executing the Shape Change macro.
 
 #### The Shapes List
 
