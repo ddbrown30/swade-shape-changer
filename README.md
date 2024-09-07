@@ -43,6 +43,24 @@ To trigger a shape change, select the token that you wish to use shape change fr
 
 To revert back to the original shape, select the transformed token and execute the Revert Shape macro (found in the macro compendium for this module). This will swap back to the original token and will update the bennies, wounds, and fatigue of the original token to match the transformed token.
 
+#### Example Shape Change
+
+Here is an example to illustrate how everything should work. We start with these two characters. The character Proclus is going to turn into a dragon.
+
+![Preview](./example_actors.webp?raw=true)
+
+Here's what Proclus looks like on the map before the change.
+
+![Preview](./example_before.webp?raw=true)
+
+Here's what the GM's view will look like after. On the player views, Proclus will not be visible.
+
+![Preview](./example_after.webp?raw=true)
+
+And finally, here's what the new token's character sheet looks like. You can access this sheet by double clicking on the new token.
+
+![Preview](./example_after_sheet.webp?raw=true)
+
 ## Feedback
 
 Suggestions and feedback are appreciated. You can contact me on Discord at thechemist30 if you have any questions or comments.
