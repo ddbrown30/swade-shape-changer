@@ -63,6 +63,6 @@ Here is an example to illustrate how everything should work. We start with these
 
 ## Feedback
 
-Suggestions and feedback are appreciated. You can contact me on Discord at thechemist30 if you have any questions or comments.
+Suggestions and feedback are appreciated. You can contact me on Discord in the [dedicated support thread](https://discord.com/channels/170995199584108546/1280219668715409503) or directly at thechemist30 if you have any questions or comments.
 
 To report a bug, please open a new issue [in the tracker](https://github.com/ddbrown30/swade-shape-changer/issues) or use the [Bug Reporter module](https://www.foundryvtt-hub.com/package/bug-reporter/)
