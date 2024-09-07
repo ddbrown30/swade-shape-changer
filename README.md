@@ -14,7 +14,7 @@ In order to use the shape change functionality, the actor you want to transform 
 
 #### The Shapes List
 
-When you open the shape change power, you'll see that a new Shapes tab has been added. This tab lists all the shapes that will be available when executing the Shape Change macro. To add new shapes, simply drag an actor from the Actors tab and drop it on the sheet. You can also do this by dragging actors to the actor sheet. This can be done by either the GM or the player if they have the correct permissions. It is fully supported for the GM to add actors to this list that the player does not have any ownership level of.
+When you open the shape change power, you'll see that a new Shapes tab has been added. This tab lists all the shapes that will be available when executing the Shape Change macro. To add new shapes, simply drag an actor from the Actors tab and drop it on the sheet. You can also do this by dragging actors to the actor sheet. This can be done by either the GM or the player if they have the correct permissions (players must have the Create New Tokens permission in order to drag and drop actors). It is fully supported for the GM to add actors to this list that the player does not have any ownership level of.
 
 Clicking on the icon for an entry will open the sheet for that actor. This will still show the sheet even if the player would normally not have permission to view it.
 
