@@ -43,7 +43,7 @@ To trigger a shape change, select the token that you wish to use shape change fr
 
 To revert back to the original shape, select the transformed token and execute the Revert Shape macro (found in the macro compendium for this module). This will swap back to the original token and will update the bennies, wounds, and fatigue of the original token to match the transformed token.
 
-#### Example Shape Change
+## Example Shape Change
 
 Here is an example to illustrate how everything should work. We start with these two characters. The character Proclus is going to turn into a dragon.
 
