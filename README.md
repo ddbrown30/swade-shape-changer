@@ -47,19 +47,19 @@ To revert back to the original shape, select the transformed token and execute t
 
 Here is an example to illustrate how everything should work. We start with these two characters. The character Proclus is going to turn into a dragon.
 
-![Preview](./example_actors.webp?raw=true)
+<img src="./example_actors.webp" width="1000">
 
-Here's what Proclus looks like on the map before the change.
+<br><br>Here's what Proclus looks like on the map before the change.
 
-![Preview](./example_before.webp?raw=true)
+<img src="./example_before.webp" width="500">
 
-Here's what the GM's view will look like after. On the player views, Proclus will not be visible.
+<br><br>Here's what the GM's view will look like after. On the player views, Proclus will not be visible.
 
-![Preview](./example_after.webp?raw=true)
+<img src="./example_after.webp" width="500">
 
-And finally, here's what the new token's character sheet looks like. You can access this sheet by double clicking on the new token.
+<br><br>And finally, here's what the new token's character sheet looks like. You can access this sheet by double clicking on the new token.
 
-![Preview](./example_after_sheet.webp?raw=true)
+<img src="./example_after_sheet.webp" width="500">
 
 ## Feedback
 
