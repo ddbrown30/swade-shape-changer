@@ -20,7 +20,7 @@ Clicking on the icon for an entry will open the sheet for that actor. This will 
 
 Clicking the trash icon will delete the shape from the list.
 
-![Preview](./shapes_list.webp?raw=true)
+<img src="./shapes_list.webp" width="500">
 
 #### Change Shape Macro
 
