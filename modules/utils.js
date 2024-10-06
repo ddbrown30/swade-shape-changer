@@ -105,6 +105,15 @@ export class Utils {
         item.name.toLowerCase() == "monstrous shape change";
     }
 
+    static isTransformationAbility(item) {
+        if (!item || item.type != "ability") {
+            return false;
+        }
+
+        return item.system.swid == "transformation" ||
+        item.name.toLowerCase() == "transformation";
+    }
+
     static useSUCC() {
         return game.modules.get('succ')?.active &&
         Utils.getSetting(SSC_CONFIG.SETTING_KEYS.useSUCC) &&

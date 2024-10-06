@@ -22,13 +22,15 @@ export class Handlers {
      * @param {*} data
      */
     static async onPreUpdateItem(app, html, data) {
-        if (!Utils.isShapeChangePower(app)) {
-            return;
+        if (Utils.isShapeChangePower(app)) {
+            //If we're making a change to the shape change power, we need to save the current tab so that it doesn't accidentally switch during the render
+            Handlers.openTab = true;
+            Handlers.activeTab = app._sheet._tabs?.[0]?.active;
+        } else if (Utils.isTransformationAbility(app)) {
+            //If we're making a change to the transformation ability, we need to save the current tab so that it doesn't accidentally switch during the render
+            Handlers.openTab = true;
+            Handlers.activeTab = app._sheet._tabs?.[0]?.active;
         }
-
-        //If we're making a change to the shape change power, we need to save the current tab so that it doesn't accidentally switch during the render
-        Handlers.openTab = true;
-        Handlers.activeTab = app._sheet._tabs?.[0]?.active;
     }
 
     /**
@@ -39,29 +41,30 @@ export class Handlers {
      */
     static async onRenderItemSheet(app, html, data) {
         let item = app.object;
-        if (!Utils.isShapeChangePower(item)) {
-            return;
-        }
+        if (Utils.isShapeChangePower(item)) {
 
-        //Local function for handling actors being dropped on the shape change item sheet
-        async function onDrop(event) {
-            const data = TextEditor.getDragEventData(event);
-            if (data.type == "Actor") {
-                Handlers.addActorToShapeChangePower(data, this);
+            //Local function for handling actors being dropped on the shape change item sheet
+            async function onDrop(event) {
+                const data = TextEditor.getDragEventData(event);
+                if (data.type == "Actor") {
+                    Handlers.addActorToShapeChangePower(data, this);
+                }
             }
+    
+            //Add the drop binding to the item sheet
+            const dragDrop = new DragDrop({
+                dragSelector: null,
+                dropSelector: null,
+                callbacks: {
+                    drop: onDrop.bind(item)
+                }
+            });
+            dragDrop.bind(app.form);
+
+            Handlers.addTabToShapeChangeSheet(html, item);
+        } else if (Utils.isTransformationAbility(item)) {
+            Handlers.addTabToTransformationAbility(app, html, item);
         }
-
-        //Add the drop binding to the item sheet
-        const dragDrop = new DragDrop({
-            dragSelector: null,
-            dropSelector: null,
-            callbacks: {
-                drop: onDrop.bind(item)
-            }
-        });
-        dragDrop.bind(app.form);
-
-        Handlers.addTabToShapeChangeSheet(html, item);
     }
 
     /**
@@ -94,8 +97,10 @@ export class Handlers {
             let shapes = power.getFlag(SSC_CONFIG.NAME, SSC_CONFIG.FLAGS.shapes);
             let shape = shapes.find(e => e == ev.currentTarget.dataset.shapeId);
             const shapeActor = fromUuidSync(shape);
-            shapeActor.sheet._canUserView = function() { return true; };
-            shapeActor.sheet.render(true);
+            if (shapeActor) {
+                shapeActor.sheet._canUserView = function() { return true; };
+                shapeActor.sheet.render(true);
+            }
         });
 
         //Event handler for the delete buttons
@@ -167,5 +172,56 @@ export class Handlers {
                 });
             }
         }
+    }
+
+    /**
+     * Adds a new tab to the transformation ability sheet that displays info about our human shape
+     * @param {*} html
+     * @param {Item} ability //The transformation ability item
+     */
+    static async addTabToTransformationAbility(app, html, ability) {
+        let humanTokenImg = ability.getFlag(SSC_CONFIG.NAME, SSC_CONFIG.FLAGS.humanTokenImg) ?? "";
+        let humanTokenScale = ability.getFlag(SSC_CONFIG.NAME, SSC_CONFIG.FLAGS.humanTokenScale) ?? "";
+        const templateData = { humanTokenImg: humanTokenImg, humanTokenScale: humanTokenScale, isOwner: ability.isOwner };
+        const content = await renderTemplate(SSC_CONFIG.DEFAULT_CONFIG.templates.humanTab, templateData);
+
+        $('.tabs', html).append($('<a>').addClass("item").attr("data-tab", "human").html(game.i18n.localize('SSC.HumanTab.Tab')));
+        $('<section>').addClass("tab human").attr('data-tab', 'human').html(content).insertAfter($('.tab:last', html));
+
+        html.find("button.file-picker").click(Handlers.activateFilePicker.bind(app));
+        
+        html.find("input[name=human-img-path").on("change", async event => {
+            await ability.setFlag(SSC_CONFIG.NAME, SSC_CONFIG.FLAGS.humanTokenImg, event.target.value);
+            app.render(true);
+        });
+        
+        html.find("input[name=scale").on("change", async event => {
+            await ability.setFlag(SSC_CONFIG.NAME, SSC_CONFIG.FLAGS.humanTokenScale, event.target.value);
+            app.render(true);
+        });
+
+        //This hack ensures the correct tab stays open when the sheet renders
+        if (Handlers.openTab) {
+            ability.sheet._tabs?.[0]?.activate?.(Handlers.activeTab);
+            Handlers.openTab = false;
+        }
+    }
+
+    static activateFilePicker(event) {
+      event.preventDefault();
+      
+      const button = event.currentTarget;
+      const target = button.dataset.target;
+      const field = button.form[target] || null;
+
+      const options = {
+        field: field,
+        type: button.dataset.type,
+        current: field?.value ?? "",
+        button: button
+      };
+
+      const fp = new FilePicker(options);
+      return fp.browse();
     }
 }

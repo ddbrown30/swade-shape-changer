@@ -10,6 +10,7 @@ export const SUCC_SHAPE_CHANGE = "shape-change";
 export const DEFAULT_CONFIG = {
     templates: {
         shapesTab: `${PATH}/templates/shapes-tab.hbs`,
+        humanTab: `${PATH}/templates/human-tab.hbs`,
         changeShapeDialog: `${PATH}/templates/change-shape-dialog.hbs`,
     },
     changeTypes: {
@@ -22,6 +23,8 @@ export const FLAGS = {
     shapes: "shapes",
     originalToken: "originalToken",
     isChangeSource: "isChangeSource",
+    humanTokenImg: "humanTokenImg",
+    humanTokenScale: "humanTokenScale",
 }
 
 export const SETTING_KEYS = {

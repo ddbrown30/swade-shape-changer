@@ -1,10 +1,10 @@
 {
-  "name": "Change Shape",
+  "name": "Werewolf to Human",
   "type": "script",
   "author": "26zedh1nuCLjFH0V",
-  "img": "icons/magic/control/debuff-energy-hold-levitate-yellow.webp",
+  "img": "icons/creatures/mammals/wolf-howl-moon-black.webp",
   "scope": "global",
-  "command": "game.swadeShapeChanger.changeShape(token);",
+  "command": "game.swadeShapeChanger.werewolfToHuman(token);",
   "folder": null,
   "flags": {
     "core": {}
@@ -14,9 +14,9 @@
     "duplicateSource": null,
     "coreVersion": "12.331",
     "systemId": "swade",
-    "systemVersion": "4.1.0",
-    "createdTime": 1724912249105,
-    "modifiedTime": 1728184812300,
+    "systemVersion": "4.1.1",
+    "createdTime": 1728184812285,
+    "modifiedTime": 1728185035419,
     "lastModifiedBy": "26zedh1nuCLjFH0V"
   },
   "ownership": {
@@ -24,7 +24,7 @@
     "UQ9simz41eIsn2rv": 3,
     "26zedh1nuCLjFH0V": 3
   },
-  "_id": "c3568HPTSqGo5zci",
-  "sort": 100000,
-  "_key": "!macros!c3568HPTSqGo5zci"
+  "_id": "JwfCBA3uSrEf67zQ",
+  "sort": 200000,
+  "_key": "!macros!JwfCBA3uSrEf67zQ"
 }

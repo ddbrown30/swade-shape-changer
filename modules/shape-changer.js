@@ -7,6 +7,7 @@ export class ShapeChanger {
 
     /**
      * Creates a new token based on an actor and configures it following the rules for the shape change power
+     * @param {Number} sceneId //The token being transformed
      * @param {Token} originalToken //The token being transformed
      * @param {Actor} actorToCreate //The actor to copy
      * @param {String} typeChoice //The type of shape change (base or polymorph)
@@ -263,5 +264,103 @@ export class ShapeChanger {
                 rejectClose: false,
             });
         }
+    }
+
+    /**
+     * Creates a new token copied from the original token and transforms it into a human based on the transformation rules in the Horror Companion
+     * @param {Actor} sceneId //The actor to copy
+     * @param {Token} originalTokenId //The token being transformed
+     */
+    static async werewolfToHuman(sceneId, originalTokenId) {
+        let originalToken = game.scenes.find(s => s.id == sceneId).tokens.find(t => t.id == originalTokenId);
+        const originalActor = originalToken.actor;
+        const actorToCreate = await fromUuid(originalToken.actor.uuid);
+        
+        let transformationAbility = originalActor.items.find((item) => Utils.isTransformationAbility(item));
+        let humanTokenImg = "";
+        let humanTokenScale = 1;
+        if (transformationAbility) {
+            humanTokenImg = transformationAbility.getFlag(SSC_CONFIG.NAME, SSC_CONFIG.FLAGS.humanTokenImg);
+            if (humanTokenImg?.length) {
+                humanTokenScale = transformationAbility.getFlag(SSC_CONFIG.NAME, SSC_CONFIG.FLAGS.humanTokenScale) ?? 1;
+            } else {
+                humanTokenImg = originalToken.texture.src;
+                humanTokenScale = originalToken.texture.scaleX;
+            }
+        }
+
+        const newTokenDoc = await actorToCreate.getTokenDocument({
+            x: originalToken.x,
+            y: originalToken.y,
+            actorLink: false, //We always want to unlink the actor so that we don't modify the original
+            "texture.src": humanTokenImg,
+            "texture.scaleX": humanTokenScale,
+            "texture.scaleY": humanTokenScale,
+        });
+
+        //Mark the token as a change source so that we warn the user if they try to delete it
+        await originalToken.setFlag(SSC_CONFIG.NAME, SSC_CONFIG.FLAGS.isChangeSource, true);
+
+        let createdToken = (await canvas.scene.createEmbeddedDocuments("Token", [newTokenDoc.toObject(false)]))[0];
+        let createdActor = createdToken.actor;
+
+        //Hide the original token and move it to the side
+        await canvas.scene.updateEmbeddedDocuments("Token", [{
+            _id: originalToken.id,
+            x: originalToken.x - canvas.grid.size,
+            y: originalToken.y - canvas.grid.size,
+            "hidden": true
+        }], { animate: false });
+
+        const WEREWOLF_ABILITIES = [
+            "biteclaws",
+            "cannot-speak",
+            "speed",
+            "regeneration-slow",
+            "infravision"
+        ];
+
+        let itemsToRemove = [];
+        for (let item of createdActor.items) {
+            if (item.type == "edge") {
+                //Werewolves do not keep their werewolf edges in human form
+                if (item.system.requirements.find((r) => r.selector == "werewolf")){
+                    itemsToRemove.push(item);
+                }
+            } else if (item.type == "ability") {
+                //Werewolves do not keep their werewolf abilities in human form
+                if (WEREWOLF_ABILITIES.find((a) => a == item.system.swid)) {
+                    itemsToRemove.push(item);
+                }
+            } else if (item.type == "hindrance") {
+                //Werewolves only have the weakness to silvered weapons while in werewolf form
+                if (item.name.toLowerCase().includes("weakness") && item.system.description.toLowerCase().includes("silvered weapons")) {
+                    itemsToRemove.push(item);
+                }
+            }
+        }
+
+        for (let item of itemsToRemove) {
+            await item.delete();
+        }
+
+        //Werewolves increase agility, strength and vigor by 2 die types so we need to remove that
+        let actorUpdateData = {
+            name: originalActor.name,
+            "system.attributes.agility.die.sides": originalActor._source.system.attributes.agility.die.sides - 4,
+            "system.attributes.strength.die.sides": originalActor._source.system.attributes.strength.die.sides - 4,
+            "system.attributes.vigor.die.sides": originalActor._source.system.attributes.vigor.die.sides - 4,
+            "system.details.autoCalcToughness": true //In the off chance this was disabled, we need to enable it so the human form is correct
+        };
+
+        await createdActor.update(actorUpdateData);
+
+        //Record our original token so we can use it to revert later
+        await createdToken.setFlag(SSC_CONFIG.NAME, SSC_CONFIG.FLAGS.originalToken, originalToken.id);
+
+        //The new token takes the place of the old in the combat tracker
+        await ShapeChanger.swapTokensInCombat(originalToken, createdToken);
+
+        return createdToken;
     }
 }

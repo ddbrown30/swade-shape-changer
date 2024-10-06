@@ -1,0 +1,22 @@
+<div class="ssc">
+    <div class="flexrow path">
+        <div class="wrapper-rel">
+            <label for="human-img-path" class="inset-label">{{localize "SSC.HumanTab.TokenImage"}}</label>
+            <input type="text" name="human-img-path" title="Status Icon Path" value="{{humanTokenImg}}" placeholder="/icons/example.svg" data-dtype="String">
+        </div>
+        <button type="button" name="file-picker-human-img" class="file-picker" data-type="image" data-target="human-img-path" title="Browse Files" tabindex="-1">
+            <i class="fas fa-file-import fa-fw"></i>
+        </button>
+    </div>
+    <div class="form-group">
+        <label>{{localize "Scale"}} <span class="units">({{localize "Ratio"}})</span></label>
+        <div class="form-fields">
+            {{ rangePicker name="scale" value=humanTokenScale min="0.2" max="3.0" step="0.1" }}
+        </div>
+    </div>
+    {{#if humanTokenImg}}
+    <div class="flexcol human-img">
+        <img name="human-img" src="{{humanTokenImg}}" title="{{localize " SSC.HumanTab.TokenImage"}}" class="human-img" />
+    </div>
+    {{/if}}
+</div>

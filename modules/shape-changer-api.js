@@ -1,5 +1,4 @@
 import { ChangeShapeDialog } from "./change-shape-dialog.js";
-import { ShapeChanger } from "./shape-changer.js";
 import * as SSC_CONFIG from "./ssc-config.js";
 import { Utils } from "./utils.js";
 
@@ -67,5 +66,35 @@ export class ShapeChangerAPI {
         createdToken.actor.sheet.close();
 
         await game.swadeShapeChanger.socket.executeAsGM("revertChangeForToken", createdToken.scene.id, createdToken.id, originalToken.id);
+    }
+    
+    /**
+     * Opens the dialog for executing a werewolf transformation
+     * @param {Token} sourceToken //The token that is the source of the shape change
+     */
+    static async werewolfToHuman(sourceToken) {
+        if (!game.user.isTrusted) {
+            Utils.showNotification("error", game.i18n.localize("SSC.Errors.NotTrusted"));
+            return;
+        }
+
+        if (!sourceToken) {
+            Utils.showNotification("error", game.i18n.localize("SSC.Errors.NoTokenSelected"));
+            return;
+        }
+
+        foundry.applications.api.DialogV2.confirm({
+            window: { title: game.i18n.localize("SSC.WerewolfToHumanDialog.Title") },
+            content: game.i18n.localize("SSC.WerewolfToHumanDialog.Body"),
+            position: { width: 400 },
+            yes: {
+                callback: async (event, button, dialog) =>
+                    await game.swadeShapeChanger.socket.executeAsGM(
+                        "werewolfToHuman",
+                        sourceToken.scene.id,
+                        sourceToken.id)
+            },
+            defaultYes: true
+        });
     }
 }

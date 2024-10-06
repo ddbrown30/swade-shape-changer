@@ -67,3 +67,8 @@
 .change-shape-dialog [data-action="configureSheet"], [data-action="copyUuid"] {
   visibility: hidden;
 }
+
+.ssc .human-img {
+  width: 300px;
+  border: none;
+}

@@ -5,6 +5,11 @@
             "Header": "Shapes",
             "InvalidActor": "Invalid Actor"
         },
+        "HumanTab": {
+            "Tab": "Human Form",
+            "Header": "Human Form",
+            "TokenImage": "Token Image"
+        },
         "ChangeShapeDialog": {
             "Title": "Shape Change Options",
             "ShapeSelectionLabel": "Target Shape",
@@ -29,6 +34,10 @@
                 "Title": "Max Fatigue Mismatch",
                 "Body": "The max Fatigue value on the original token does not match the max Fatigue value on the new token. Please open the new token and adjust the max Fatigue manually.<p>I'd also appreciate if you would open an issue on GitHub describing how this happened.<br>"
             }
+        },
+        "WerewolfToHumanDialog": {
+            "Title": "Tranform Into Human",
+            "Body": "Change this token into its human form?"
         },
         "ActorSheetDropDialog": {
             "Title": "Add to Shape Change?",
