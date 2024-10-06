@@ -1,3 +1,4 @@
+import { ShapeChangerAPI } from "./shape-changer-api.js";
 import { ShapeChanger } from "./shape-changer.js";
 import * as SSC_CONFIG from "./ssc-config.js";
 import { Utils } from "./utils.js";
@@ -52,9 +53,17 @@ export class ChangeShapeDialog extends HandlebarsApplicationMixin(DocumentSheetV
         this.shapeNames = [];
         for (let shape of shapes) {
             const shapeActor = await fromUuid(shape);
-            this.shapeNames.push({ name: shapeActor.name, label: shapeActor.name, uuid: shape });
+            if (shapeActor) {
+                this.shapeNames.push({ name: shapeActor.name, label: shapeActor.name, uuid: shape });
+            }
         }
         this.shapeNames.sort((a, b) => a.name.localeCompare(b.name));
+
+        if (this.shapeNames.length == 0) {
+            Utils.showNotification("error", game.i18n.localize("SSC.Errors.NoShapes"));
+            this.close();
+            return;
+        }
 
         this.targets = [];
         this.targetTokens = [];
@@ -130,7 +139,6 @@ export class ChangeShapeDialog extends HandlebarsApplicationMixin(DocumentSheetV
                 if (originalToken) {
                     //This is an existing shape change. Revert back to the original token and then use that token moving forward
                     await ShapeChangerAPI.revertShape(targetToken);
-                    sourceToken = targetToken == sourceToken ? originalToken : sourceToken;
                     dialog.targetTokens = dialog.targetTokens.filter(t => t.id != targetToken.id);
                     dialog.targetTokens.push(originalToken);
                 }
