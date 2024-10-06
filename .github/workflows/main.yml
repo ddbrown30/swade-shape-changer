@@ -14,7 +14,7 @@ jobs:
     - name: Install Dependencies
       run: npm install
     - name: Pack
-      run: npm run pack
+      run: npm run packFromJson
         
     # Substitute the Manifest and Download URLs in the module.json
     - name: Substitute Manifest and Download Links For Versioned Ones
