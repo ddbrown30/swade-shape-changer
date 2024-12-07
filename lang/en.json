@@ -13,6 +13,7 @@
         "ChangeShapeDialog": {
             "Title": "Shape Change Options",
             "ShapeSelectionLabel": "Target Shape",
+            "DragShape": "Select or Drag+Drop",
             "TargetSelectionLabel": "Target Token",
             "TargetSelectionAll": "All Targets",
             "ShapeChangeTypesLabel": "Change Type",
@@ -56,8 +57,7 @@
             "NotTrusted": "Current user lacks permission to execute command.",
             "NoActiveGM": "Command cannot be executed as there is currently no active GM connected to the world.",
             "NoTokenSelected": "No token selected.",
-            "NoShapeChange": "Selected token does not have the shape change power.",
-            "NoShapes": "Selected token's shape change power contains no shapes. Drag actors to the caster or their shape change power to add shapes.",
+            "NoShapeSelected": "No shape selected.",
             "NotAChangedToken": "Selected token was not created by the shape change module.",
             "OriginalTokenNotFound": "The original token no longer exists in the scene. You will have to revert manually."
         },

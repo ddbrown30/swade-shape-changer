@@ -1,42 +1,50 @@
 <div class='ssc'>
     <form id="change-shape-form">
-        <label for="shape">{{{localize "SSC.ChangeShapeDialog.ShapeSelectionLabel"}}}</label>
-        <select name="shape" class="shape" title="">
-            {{selectOptions shapes selected=shape localize=true valueAttr="name" labelAttr="label"}}
-        </select>
-        <br>
-        <p>
-            {{#if targets.length }}
+        {{#if targets.length }}
+        <div>
             <label for="target">{{{localize "SSC.ChangeShapeDialog.TargetSelectionLabel"}}}</label>
             <select name="target" class="shape" title="">
                 {{selectOptions targets selected=target localize=true valueAttr="name" labelAttr="label"}}
             </select>
             <br>
+        </div>
+        {{/if}}
+
+        {{#if targets.length}}
         <p>
-            {{/if}}
+        {{/if}}
+            <label for="shape">{{{localize "SSC.ChangeShapeDialog.ShapeSelectionLabel"}}}</label>
+            <select name="shape" class="shape" title="">
+                {{selectOptions shapes selected=shape localize=true valueAttr="name" labelAttr="label"}}
+            </select>
+            <br>
+        {{#if targets.length}}
+        </p>
+        {{/if}}
+
+        <p>
             <label for="changeType">{{{localize "SSC.ChangeShapeDialog.ShapeChangeTypesLabel"}}}</label>
             <select name="changeType" class="shape" title="">
                 {{selectOptions changeTypes selected=changeType localize=true}}
             </select>
             <br>
-            {{#if (eq changeType "polymorph") }}
-        <p>
-        <div class="formgroup">
+        </p>
+
+        <div>
             <input type="checkbox" id="animal-smarts" style="vertical-align: middle;">
             <label for="animal-smarts" style="vertical-align: middle;">
                 {{localize "SSC.ChangeShapeDialog.AnimalSmartsCheckbox"}}
             </label>
         </div>
-        {{/if}}
+
         {{#if useSUCC }}
-        <div class="formgroup">
+        <div>
             <input type="checkbox" id="duration" style="vertical-align: middle;">
             <label for="duration" style="vertical-align: middle;">
                 {{localize "SSC.ChangeShapeDialog.DurationCheckbox"}}
             </label>
         </div>
         {{/if}}
-        <p>
     </form>
     {{#unless (or useSUCC (eq changeType "polymorph")) }}
     <br>

@@ -131,7 +131,7 @@ export class Handlers {
                 content: game.i18n.localize("SSC.CompendiumWarning.Body"),
                 position: { width: 400 },
                 rejectClose: false,
-            }).render(true);
+            });
             return;
         }
 

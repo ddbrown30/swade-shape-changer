@@ -29,52 +29,32 @@ export class ChangeShapeDialog extends HandlebarsApplicationMixin(DocumentSheetV
 
     async _prepareContext(_options) {
         let sourceToken = this.document.object;
-        let shapePowers = sourceToken.actor.items.filter((item) => Utils.isShapeChangePower(item));
-        if (!shapePowers) {
-            Utils.showNotification("error", game.i18n.localize("SSC.Errors.NoShapeChange"));
-            this.close();
-            return;
-        }
-
-        let shapes = [];
-        for (let shapePower of shapePowers) {
-            shapes = shapes.concat(shapePower.getFlag(SSC_CONFIG.NAME, SSC_CONFIG.FLAGS.shapes) ?? []);
-        }
-
-        if (shapes.length == 0) {
-            Utils.showNotification("error", game.i18n.localize("SSC.Errors.NoShapes"));
-            this.close();
-            return;
-        }
-
-        //Remove duplicates
-        shapes = [...new Set(shapes)];
 
         this.shapeNames = [];
-        for (let shape of shapes) {
-            const shapeActor = await fromUuid(shape);
-            if (shapeActor) {
-                this.shapeNames.push({ name: shapeActor.name, label: shapeActor.name, uuid: shape });
-            }
-        }
-        this.shapeNames.sort((a, b) => a.name.localeCompare(b.name));
 
-        if (this.shapeNames.length == 0) {
-            Utils.showNotification("error", game.i18n.localize("SSC.Errors.NoShapes"));
-            this.close();
-            return;
+        //Populate our list of shapes from our powers, if any
+        await this.getShapesFromPowers(sourceToken);
+
+        //If we've dropped an actor on the dialog, use that as the first entry in the list otherwise show the use string
+        if (this.dragDropActor != null) {
+            this.shapeNames.unshift({ name: this.dragDropActor.name, label: this.dragDropActor.name, uuid: this.dragDropActor.uuid });
+        } else {
+            const dragDropString = game.i18n.localize("SSC.ChangeShapeDialog.DragShape");
+            this.shapeNames.unshift({ name: dragDropString, label: dragDropString, uuid: null });
         }
 
         this.targets = [];
         this.targetTokens = [];
-        if (game.user.targets.size > 1) {
+        if (game.user.targets.size > 0) {
             for (const target of game.user.targets) {
                 this.targets.push({ name: target.name, label: target.name, token: target });
             }
             this.targets.sort((a, b) => a.name.localeCompare(b.name));
 
-            const allTargetsString = game.i18n.localize("SSC.ChangeShapeDialog.TargetSelectionAll");
-            this.targets.unshift({ name: allTargetsString, label: allTargetsString, token: null });
+            if (game.user.targets.size > 1) {
+                const allTargetsString = game.i18n.localize("SSC.ChangeShapeDialog.TargetSelectionAll");
+                this.targets.unshift({ name: allTargetsString, label: allTargetsString, token: null });
+            }
         } else {
             this.targetTokens.push(game.user.targets.size == 1 ? game.user.targets.first() : sourceToken);
         }
@@ -92,6 +72,33 @@ export class ChangeShapeDialog extends HandlebarsApplicationMixin(DocumentSheetV
         };
     };
 
+    async getShapesFromPowers(sourceToken) {
+        let shapePowers = sourceToken.actor.items.filter((item) => Utils.isShapeChangePower(item));
+        if (!shapePowers) {
+            return;
+        }
+
+        let shapes = [];
+        for (let shapePower of shapePowers) {
+            shapes = shapes.concat(shapePower.getFlag(SSC_CONFIG.NAME, SSC_CONFIG.FLAGS.shapes) ?? []);
+        }
+
+        if (shapes.length == 0) {
+            return;
+        }
+
+        //Remove duplicates
+        shapes = [...new Set(shapes)];
+
+        for (let shape of shapes) {
+            const shapeActor = await fromUuid(shape);
+            if (shapeActor) {
+                this.shapeNames.push({ name: shapeActor.name, label: shapeActor.name, uuid: shape });
+            }
+        }
+        this.shapeNames.sort((a, b) => a.name.localeCompare(b.name));
+    }
+
     /**
    * Actions performed after any render of the Application.
    * Post-render steps are not awaited by the render process.
@@ -106,6 +113,40 @@ export class ChangeShapeDialog extends HandlebarsApplicationMixin(DocumentSheetV
             this.changeType = selection.val();
             this.render();
         });
+
+        //Local function for handling actors being dropped on the dialog
+        async function onDrop(event) {
+            const data = TextEditor.getDragEventData(event);
+            if (data.type == "Actor") {
+                if (data.uuid.startsWith("Compendium")) {
+                    //We don't support using actors directly from the compendium
+                    //Show a warning popup and return
+                    foundry.applications.api.DialogV2.prompt({
+                        window: { title: game.i18n.localize("SSC.CompendiumWarning.Title") },
+                        content: game.i18n.localize("SSC.CompendiumWarning.Body"),
+                        position: { width: 400 },
+                        rejectClose: false,
+                    });
+                    return;
+                }
+
+                const shapeActor = await fromUuid(data.uuid);
+                if (shapeActor) {
+                    this.dragDropActor = shapeActor;
+                    this.render();
+                }
+            }
+        }
+
+        //Add the drop binding to the dialog
+        const dragDrop = new DragDrop({
+            dragSelector: null,
+            dropSelector: null,
+            callbacks: {
+                drop: onDrop.bind(this)
+            }
+        });
+        dragDrop.bind(this.element);
     }
 
     static async handleChangeDialogConfirm(dialog, raise) {
@@ -116,8 +157,12 @@ export class ChangeShapeDialog extends HandlebarsApplicationMixin(DocumentSheetV
 
         const shapeChoice = $(dialog.element).find("select[name='shape'").find("option:selected");
         let selectedShape = dialog.shapeNames.find((s) => s.name == shapeChoice.val());
+        if (selectedShape.uuid == null) {
+            Utils.showNotification("error", game.i18n.localize("SSC.Errors.NoShapeSelected"));
+            return;
+        }
 
-        if (game.user.targets.size > 1) {
+        if (dialog.targets.length > 0) {
             const targetChoice = $(dialog.element).find("select[name='target'").find("option:selected");
             let target = dialog.targets.find((t) => t.name == targetChoice.val());
             if (target.token == null) {
