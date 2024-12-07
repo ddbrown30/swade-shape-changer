@@ -3,7 +3,7 @@
 ## 0.3.0
 
 * Added drag+drop support to the change shape dialog
-* We now always show the target dropdown if there are any targets selected as it was causing confusion in situations where users forgot they had something targeted
+* We now always show the target drop-down if there are any targets selected as it was causing confusion in situations where users forgot they had something targeted
 
 ## 0.2.0
 
