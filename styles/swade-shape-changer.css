@@ -64,7 +64,8 @@
   min-width: fit-content;
 }
 
-.change-shape-dialog [data-action="configureSheet"], [data-action="copyUuid"] {
+.change-shape-dialog [data-action="configureSheet"],
+.change-shape-dialog [data-action="copyUuid"] {
   visibility: hidden;
 }
 
