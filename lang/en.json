@@ -54,7 +54,7 @@
             "CreatedBody": "This token is was created as a result of a shape change. Deleting this token will break the ability to revert to the original token.<br><br>Are you sure you want to delete this token?<br>"
         },
         "Errors": {
-            "NotTrusted": "Current user lacks permission to execute command.",
+            "NotTrusted": "Current user lacks permission to execute command. They must be a GM or a Trusted Player.",
             "NoActiveGM": "Command cannot be executed as there is currently no active GM connected to the world.",
             "NoTokenSelected": "No token selected.",
             "NoShapeSelected": "No shape selected.",
