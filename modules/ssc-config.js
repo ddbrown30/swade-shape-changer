@@ -29,5 +29,9 @@ export const FLAGS = {
 
 export const SETTING_KEYS = {
     useSUCC: "useSUCC",
+    useSequencer: "useSequencer",
+    changeAnim: "changeAnim",
+    changeDelay: "changeDelay",
+    animScale: "animScale",
 }
 

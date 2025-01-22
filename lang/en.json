@@ -75,7 +75,15 @@
 
         "Settings": {
             "UseSUCCName": "Enable SUCC Support",
-            "UseSUCCHint": "Use SWADE Ultimate Condition Changer to add/remove a shape change condition executing a shape change. Requires the shape change condition to be enabled in SUCC."
+            "UseSUCCHint": "Use SWADE Ultimate Condition Changer to add/remove a shape change condition executing a shape change. Requires the shape change condition to be enabled in SUCC.",
+            "UseSequencerName": "Enable Sequencer Support",
+            "UseSequencerHint": "When enabled, executing a shape change can be configured to work with Sequencer animations.",
+            "SequencerAnimName": "Sequencer Animation",
+            "SequencerAnimHint": "The Sequencer animation to use when changing or reverting shape. If the animation does not exist, the Sequencer flow is skipped.",
+            "SequencerDelayName": "Sequencer Delay",
+            "SequencerDelayHint": "The delay, in milliseconds, after starting the animation before changing shape.",
+            "SequencerScaleName": "Sequencer Scale",
+            "SequencerScaleHint": "Used to scale the animation."
         }
     },
     "SSC.Yes": "Yes",

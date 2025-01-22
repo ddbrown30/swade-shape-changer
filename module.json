@@ -48,6 +48,14 @@
           "minimum": "4.0.2",
           "verified": "4.0.2"
         }
+      },
+      {
+        "id": "sequencer",
+        "type": "module",
+        "compatibility": {
+          "minimum": "3.4.7",
+          "verified": "3.4.7"
+        }
       }
     ]
   },
