@@ -7,45 +7,47 @@ export class ShapeChanger {
 
     /**
      * Creates a new token based on an actor and configures it following the rules for the shape change power
-     * @param {Number} sceneId //The token being transformed
-     * @param {Token} originalToken //The token being transformed
+     * @param {String} sceneId //The token being transformed
+     * @param {String} originalTokenId //The token being transformed
      * @param {Actor} actorToCreate //The actor to copy
      * @param {String} typeChoice //The type of shape change (base or polymorph)
      * @param {Boolean} animalSmarts //If true, the smarts on the new actor wil be marked as animal
      * @param {Boolean} raise //If true, make modifications as if the power was cast with a raise
      */
     static async changeTokenIntoActor(sceneId, originalTokenId, actorToCreateId, typeChoice, animalSmarts, longDuration, raise) {
-        let originalToken = game.scenes.find(s => s.id == sceneId).tokens.find(t => t.id == originalTokenId);
-        const originalActor = originalToken.actor;
+        const scene = game.scenes.find(s => s.id == sceneId);
+        let originalTokenDoc = scene.tokens.find(t => t.id == originalTokenId);
+        const originalActor = originalTokenDoc.actor;
         const actorToCreate = await fromUuid(actorToCreateId);
-
+        
         const newTokenDoc = await actorToCreate.getTokenDocument({
-            x: originalToken.x,
-            y: originalToken.y,
-            disposition: originalToken.disposition,
-            name: originalToken.name,
-            displayName: originalToken.displayName,
-            "sight.enabled": originalToken.sight.enabled,
-            "delta.ownership": originalToken.actor.ownership, //We want to make sure that the owners of the original token own the new one too
+            x: originalTokenDoc.x,
+            y: originalTokenDoc.y,
+            disposition: originalTokenDoc.disposition,
+            name: originalTokenDoc.name,
+            displayName: originalTokenDoc.displayName,
+            "sight.enabled": originalTokenDoc.sight.enabled,
+            "delta.ownership": originalTokenDoc.actor.ownership, //We want to make sure that the owners of the original token own the new one too
             actorLink: false, //We always want to unlink the actor so that we don't modify the original
         });
 
-        newTokenDoc.actor.type = originalToken.actor.type;
+        newTokenDoc.actor.type = originalTokenDoc.actor.type;
+
+        await ShapeChanger.playSequencerAnimation(scene, originalTokenDoc, newTokenDoc);
 
         //Mark the token as a shape change source so that we warn the user if they try to delete it
-        await originalToken.setFlag(SSC_CONFIG.NAME, SSC_CONFIG.FLAGS.isChangeSource, true);
-
-        let createdToken = (await canvas.scene.createEmbeddedDocuments("Token", [newTokenDoc.toObject(false)]))[0];
-        let createdActor = createdToken.actor;
-
+        await originalTokenDoc.setFlag(SSC_CONFIG.NAME, SSC_CONFIG.FLAGS.isChangeSource, true);
+        
         //Hide the original token and move it to the side
         await canvas.scene.updateEmbeddedDocuments("Token", [{
-            _id: originalToken.id,
-            x: originalToken.x - canvas.grid.size,
-            y: originalToken.y - canvas.grid.size,
+            _id: originalTokenDoc.id,
+            x: newTokenDoc.x - (canvas.grid.sizeX * originalTokenDoc.width * originalTokenDoc.texture.scaleX),
+            y: newTokenDoc.y - (canvas.grid.sizeY * originalTokenDoc.height * originalTokenDoc.texture.scaleY),
             "hidden": true
         }], { animate: false });
 
+        let createdTokenDoc = (await canvas.scene.createEmbeddedDocuments("Token", [newTokenDoc.toObject(false)]))[0];
+        let createdActor = createdTokenDoc.actor;
 
         //The shape change power retains the edges, hindrances, powers, and smarts and spirit linked skills of the original form
         //We need to delete all of those from the created actor and then copy over the ones from the original actor
@@ -145,35 +147,92 @@ export class ShapeChanger {
 
         if (Utils.useSUCC()) {
             let duration = longDuration ? 100 : undefined;
-            await game.succ.addCondition(SSC_CONFIG.SUCC_SHAPE_CHANGE, createdToken, { duration });
+            await game.succ.addCondition(SSC_CONFIG.SUCC_SHAPE_CHANGE, createdTokenDoc, { duration });
         }
 
         //Record our original token so we can use it to revert later
-        await createdToken.setFlag(SSC_CONFIG.NAME, SSC_CONFIG.FLAGS.originalToken, originalToken.id);
+        await createdTokenDoc.setFlag(SSC_CONFIG.NAME, SSC_CONFIG.FLAGS.originalToken, originalTokenDoc.id);
 
         //The new token takes the place of the old in the combat tracker
-        await ShapeChanger.swapTokensInCombat(originalToken, createdToken);
+        await ShapeChanger.swapTokensInCombat(originalTokenDoc, createdTokenDoc);
 
-        return createdToken;
+        return createdTokenDoc;
+    }
+
+    /**
+     * Plays the sequencer animation with the correct timing when changing or reverting shape
+     * @param {Scene} scene //The token being transformed
+     * @param {TokenDocument} originalTokenDoc //The token being transformed
+     * @param {TokenDocument} newTokenDoc //The newly created token
+     */
+    static async playSequencerAnimation(scene, sourceTokenDoc, destTokenDoc) {
+        if (!Utils.useSequencer()) {
+            return;
+        }
+
+        let changeAnim = Utils.getSetting(SSC_CONFIG.SETTING_KEYS.changeAnim);
+        let changeDelay = Utils.getSetting(SSC_CONFIG.SETTING_KEYS.changeDelay);
+        let animScale = Utils.getSetting(SSC_CONFIG.SETTING_KEYS.animScale);
+
+        if (!Sequencer.Database.entryExists(changeAnim)) {
+            return;
+        }
+        
+        function getCenterPoint(tokenDoc, grid) {
+            let { x, y, width, height } = tokenDoc;
+            
+            width *= grid.sizeX;
+            height *= grid.sizeY;       
+            return { x: x + (width / 2), y: y + (height / 2) };
+        }
+        const oldCenterPoint = getCenterPoint(sourceTokenDoc, scene.grid);
+        const newCenterPoint = getCenterPoint(destTokenDoc, scene.grid);
+
+        let originalTokenGS = sourceTokenDoc.width * sourceTokenDoc.texture.scaleX;
+        let newTokenGS = destTokenDoc.width * destTokenDoc.texture.scaleX;
+
+        let changeSeq = new Sequence();
+        changeSeq.effect()
+        .file(changeAnim)
+        .atLocation(oldCenterPoint, {gridUnits: true})
+        .elevation(sourceTokenDoc?.document?.elevation + 1)
+        .size(originalTokenGS * 1.5, { gridUnits: true })
+        .scale(animScale)
+        .fadeIn(250)
+        .timeRange(0, changeDelay);
+        
+        changeSeq.effect()
+        .file(changeAnim)
+        .atLocation(newCenterPoint, {gridUnits: true})
+        .elevation(destTokenDoc.elevation + 1)
+        .size(newTokenGS * 1.5, { gridUnits: true })
+        .scale(animScale)
+        .fadeOut(250)
+        .delay(changeDelay)
+        .startTime(changeDelay);
+
+        changeSeq.play();
+
+        const delay = ms => new Promise(res => setTimeout(res, ms));
+        await delay(changeDelay);
     }
 
     /**
      * Creates a new token based on an actor and configures it following the rules for the shape change power
-     * @param {Token} createdToken //The token being reverted
-     * @param {Token} originalToken //The original source token to revert to
+     * @param {String} createdTokenId //The token being reverted
+     * @param {String} originalTokenId //The original source token to revert to
      */
     static async revertChangeForToken(sceneId, createdTokenId, originalTokenId) {
-        let createdToken = game.scenes.find(s => s.id == sceneId).tokens.find(t => t.id == createdTokenId);
-        let createdActor = createdToken.actor;
-        let originalToken = game.scenes.find(s => s.id == sceneId).tokens.find(t => t.id == originalTokenId);
-        let originalActor = originalToken.actor;
+        const scene = game.scenes.find(s => s.id == sceneId);
+        let createdTokenDoc = scene.tokens.find(t => t.id == createdTokenId);
+        let createdActor = createdTokenDoc.actor;
+        let originalTokenDoc = scene.tokens.find(t => t.id == originalTokenId);
+        let originalActor = originalTokenDoc.actor;
 
-        await canvas.scene.updateEmbeddedDocuments("Token", [{
-            _id: originalToken.id,
-            x: createdToken.x,
-            y: createdToken.y,
-            "hidden": false
-        }], { animate: false });
+        originalTokenDoc.x = createdTokenDoc.x;
+        originalTokenDoc.y = createdTokenDoc.y;
+
+        await ShapeChanger.playSequencerAnimation(scene, createdTokenDoc, originalTokenDoc);
 
         let actorUpdateData = {
             "system.bennies.value": createdActor.system.bennies.value,
@@ -184,7 +243,7 @@ export class ShapeChanger {
         await originalActor.update(actorUpdateData);
 
         //We're no longer a change source
-        await originalToken.setFlag(SSC_CONFIG.NAME, SSC_CONFIG.FLAGS.isChangeSource, false);
+        await originalTokenDoc.setFlag(SSC_CONFIG.NAME, SSC_CONFIG.FLAGS.isChangeSource, false);
 
         //Remove all the existing temporary effects from the original actor
         //We're going to copy all the ones from the created actor and we're assuming that is the correct state
@@ -193,16 +252,24 @@ export class ShapeChanger {
         await originalActor.deleteEmbeddedDocuments("ActiveEffect", effectIdsToDelete, { render: false });
 
         //We're removing the shape change condition here rather than just not adding it below so that it will process macros and output to chat
-        await game.succ.removeCondition(SSC_CONFIG.SUCC_SHAPE_CHANGE, createdToken);
+        await game.succ.removeCondition(SSC_CONFIG.SUCC_SHAPE_CHANGE, createdTokenDoc);
 
         let effectsToAdd = createdActor.effects.filter(effect => effect.isTemporary);
         await originalActor.createEmbeddedDocuments("ActiveEffect", effectsToAdd, { render: false });
 
         //Swap the combatants back
-        await ShapeChanger.swapTokensInCombat(createdToken, originalToken);
+        await ShapeChanger.swapTokensInCombat(createdTokenDoc, originalTokenDoc);
 
         //Delete the created token
-        await canvas.scene.deleteEmbeddedDocuments("Token", [createdToken.id], { skipDialog: true });
+        await canvas.scene.deleteEmbeddedDocuments("Token", [createdTokenDoc.id], { skipDialog: true });
+
+        //Reposition and show the original token
+        await canvas.scene.updateEmbeddedDocuments("Token", [{
+            _id: originalTokenDoc.id,
+            x: createdTokenDoc.x,
+            y: createdTokenDoc.y,
+            "hidden": false
+        }], { animate: false });
     }
 
     /**
@@ -246,8 +313,8 @@ export class ShapeChanger {
         }
     }
 
-    static async validateFinalValues(targetToken, createdToken) {
-        const createdActor = createdToken.actor ?? game.scenes.get(targetToken.scene.id).tokens.get(createdToken._id).actor;
+    static async validateFinalValues(targetToken, createdTokenDoc) {
+        const createdActor = createdTokenDoc.actor ?? game.scenes.get(targetToken.scene.id).tokens.get(createdTokenDoc._id).actor;
         if (targetToken.actor.system.wounds.max != createdActor.system.wounds.max) {
             foundry.applications.api.DialogV2.prompt({
                 window: { title: game.i18n.localize("SSC.ChangeShapeDialog.MaxWoundNotification.Title") },
@@ -269,12 +336,12 @@ export class ShapeChanger {
     /**
      * Creates a new token copied from the original token and transforms it into a human based on the transformation rules in the Horror Companion
      * @param {Actor} sceneId //The actor to copy
-     * @param {Token} originalTokenId //The token being transformed
+     * @param {String} originalTokenId //The token being transformed
      */
     static async werewolfToHuman(sceneId, originalTokenId) {
-        let originalToken = game.scenes.find(s => s.id == sceneId).tokens.find(t => t.id == originalTokenId);
-        const originalActor = originalToken.actor;
-        const actorToCreate = await fromUuid(originalToken.actor.uuid);
+        let originalTokenDoc = game.scenes.find(s => s.id == sceneId).tokens.find(t => t.id == originalTokenId);
+        const originalActor = originalTokenDoc.actor;
+        const actorToCreate = await fromUuid(originalTokenDoc.actor.uuid);
         
         let transformationAbility = originalActor.items.find((item) => Utils.isTransformationAbility(item));
         let humanTokenImg = "";
@@ -284,14 +351,14 @@ export class ShapeChanger {
             if (humanTokenImg?.length) {
                 humanTokenScale = transformationAbility.getFlag(SSC_CONFIG.NAME, SSC_CONFIG.FLAGS.humanTokenScale) ?? 1;
             } else {
-                humanTokenImg = originalToken.texture.src;
-                humanTokenScale = originalToken.texture.scaleX;
+                humanTokenImg = originalTokenDoc.texture.src;
+                humanTokenScale = originalTokenDoc.texture.scaleX;
             }
         }
 
         const newTokenDoc = await actorToCreate.getTokenDocument({
-            x: originalToken.x,
-            y: originalToken.y,
+            x: originalTokenDoc.x,
+            y: originalTokenDoc.y,
             actorLink: false, //We always want to unlink the actor so that we don't modify the original
             "texture.src": humanTokenImg,
             "texture.scaleX": humanTokenScale,
@@ -299,16 +366,16 @@ export class ShapeChanger {
         });
 
         //Mark the token as a change source so that we warn the user if they try to delete it
-        await originalToken.setFlag(SSC_CONFIG.NAME, SSC_CONFIG.FLAGS.isChangeSource, true);
+        await originalTokenDoc.setFlag(SSC_CONFIG.NAME, SSC_CONFIG.FLAGS.isChangeSource, true);
 
-        let createdToken = (await canvas.scene.createEmbeddedDocuments("Token", [newTokenDoc.toObject(false)]))[0];
-        let createdActor = createdToken.actor;
+        let createdTokenDoc = (await canvas.scene.createEmbeddedDocuments("Token", [newTokenDoc.toObject(false)]))[0];
+        let createdActor = createdTokenDoc.actor;
 
         //Hide the original token and move it to the side
         await canvas.scene.updateEmbeddedDocuments("Token", [{
-            _id: originalToken.id,
-            x: originalToken.x - canvas.grid.size,
-            y: originalToken.y - canvas.grid.size,
+            _id: originalTokenDoc.id,
+            x: originalTokenDoc.x - canvas.grid.size,
+            y: originalTokenDoc.y - canvas.grid.size,
             "hidden": true
         }], { animate: false });
 
@@ -356,11 +423,11 @@ export class ShapeChanger {
         await createdActor.update(actorUpdateData);
 
         //Record our original token so we can use it to revert later
-        await createdToken.setFlag(SSC_CONFIG.NAME, SSC_CONFIG.FLAGS.originalToken, originalToken.id);
+        await createdTokenDoc.setFlag(SSC_CONFIG.NAME, SSC_CONFIG.FLAGS.originalToken, originalTokenDoc.id);
 
         //The new token takes the place of the old in the combat tracker
-        await ShapeChanger.swapTokensInCombat(originalToken, createdToken);
+        await ShapeChanger.swapTokensInCombat(originalTokenDoc, createdTokenDoc);
 
-        return createdToken;
+        return createdTokenDoc;
     }
 }

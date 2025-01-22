@@ -120,6 +120,11 @@ export class Utils {
         game.succ.getCondition(SSC_CONFIG.SUCC_SHAPE_CHANGE);
     }
 
+    static useSequencer() {
+        return game.modules.get('sequencer')?.active &&
+        Utils.getSetting(SSC_CONFIG.SETTING_KEYS.useSequencer);
+    }
+
     static validateSUCCConfig() {
         if (Utils.getSetting(SSC_CONFIG.SETTING_KEYS.useSUCC) &&
             !game.succ.getCondition(SSC_CONFIG.SUCC_SHAPE_CHANGE)) {

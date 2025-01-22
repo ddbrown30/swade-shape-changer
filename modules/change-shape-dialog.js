@@ -193,6 +193,8 @@ export class ChangeShapeDialog extends HandlebarsApplicationMixin(DocumentSheetV
         const animalSmarts = $(dialog.element).find("input[id='animal-smarts'");
         const longDuration = $(dialog.element).find("input[id='duration'");
 
+        dialog.close();
+
         for (let targetToken of dialog.targetTokens) {
             const createdToken = await game.swadeShapeChanger.socket.executeAsGM(
                 "changeTokenIntoActor",
@@ -206,7 +208,5 @@ export class ChangeShapeDialog extends HandlebarsApplicationMixin(DocumentSheetV
 
             ShapeChanger.validateFinalValues(targetToken, createdToken);
         }
-
-        dialog.close();
     }
 }
