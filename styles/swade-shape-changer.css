@@ -73,3 +73,9 @@
   width: 300px;
   border: none;
 }
+
+.ssc .shape-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}

@@ -14,10 +14,14 @@
         <p>
         {{/if}}
             <label for="shape">{{{localize "SSC.ChangeShapeDialog.ShapeSelectionLabel"}}}</label>
-            <select name="shape" class="shape" title="">
-                {{selectOptions shapes selected=shape localize=true valueAttr="name" labelAttr="label"}}
-            </select>
-            <br>
+            <div class="shape-row">
+                <select name="shape" class="shape" title="">
+                    {{selectOptions shapes selected=shape localize=true valueAttr="name" labelAttr="label"}}
+                </select>
+            {{#if actorBrowser}}
+                <a class="open-actor-browser-button" aria-label="{{{localize " ACTOR_BROWSER.OpenActorBrowser"}}}" role="button" data-tooltip="ACTOR_BROWSER.OpenActorBrowser"><i class="fas fa-folder-user fa-lg"></i></a>
+            {{/if}}
+            </div>
         {{#if targets.length}}
         </p>
         {{/if}}

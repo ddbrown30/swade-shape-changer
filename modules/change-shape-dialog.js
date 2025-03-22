@@ -68,7 +68,8 @@ export class ChangeShapeDialog extends HandlebarsApplicationMixin(DocumentSheetV
             target: this.targets[0]?.name,
             changeTypes: SSC_CONFIG.DEFAULT_CONFIG.changeTypes,
             changeType: this.changeType,
-            useSUCC: Utils.useSUCC()
+            useSUCC: Utils.useSUCC(),
+            actorBrowser: !!game.actorBrowser
         };
     };
 
@@ -113,28 +114,22 @@ export class ChangeShapeDialog extends HandlebarsApplicationMixin(DocumentSheetV
             this.changeType = selection.val();
             this.render();
         });
+        
+        if (game.actorBrowser) {
+            const openBrowserButton = this.element.querySelector(".open-actor-browser-button");
+            openBrowserButton.addEventListener("click", async event => {
+                let result = await new game.actorBrowser.ActorBrowserDialog({ selector: true, worldActorsOnly: true}).wait();
+                if (result) {
+                    await this.selectShape(result);
+                }
+            });
+        }
 
         //Local function for handling actors being dropped on the dialog
         async function onDrop(event) {
             const data = TextEditor.getDragEventData(event);
             if (data.type == "Actor") {
-                if (data.uuid.startsWith("Compendium")) {
-                    //We don't support using actors directly from the compendium
-                    //Show a warning popup and return
-                    foundry.applications.api.DialogV2.prompt({
-                        window: { title: game.i18n.localize("SSC.CompendiumWarning.Title") },
-                        content: game.i18n.localize("SSC.CompendiumWarning.Body"),
-                        position: { width: 400 },
-                        rejectClose: false,
-                    });
-                    return;
-                }
-
-                const shapeActor = await fromUuid(data.uuid);
-                if (shapeActor) {
-                    this.dragDropActor = shapeActor;
-                    this.render();
-                }
+                this.selectShape(data.uuid);
             }
         }
 
@@ -147,6 +142,27 @@ export class ChangeShapeDialog extends HandlebarsApplicationMixin(DocumentSheetV
             }
         });
         dragDrop.bind(this.element);
+    }
+    
+
+    async selectShape(shapeUuid) {
+        if (shapeUuid.startsWith("Compendium")) {
+            //We don't support using actors directly from the compendium
+            //Show a warning popup and return
+            foundry.applications.api.DialogV2.prompt({
+                window: { title: game.i18n.localize("SSC.CompendiumWarning.Title") },
+                content: game.i18n.localize("SSC.CompendiumWarning.Body"),
+                position: { width: 400 },
+                rejectClose: false,
+            });
+            return;
+        }
+
+        const shapeActor = await fromUuid(shapeUuid);
+        if (shapeActor) {
+            this.dragDropActor = shapeActor;
+            this.render();
+        }
     }
 
     static async handleChangeDialogConfirm(dialog, raise) {
