@@ -118,7 +118,7 @@ export class ChangeShapeDialog extends HandlebarsApplicationMixin(DocumentSheetV
         if (game.actorBrowser) {
             const openBrowserButton = this.element.querySelector(".open-actor-browser-button");
             openBrowserButton.addEventListener("click", async event => {
-                let result = await new game.actorBrowser.ActorBrowserDialog({ selector: true, worldActorsOnly: true}).wait();
+                let result = await new game.actorBrowser.ActorBrowserDialog({ selector: true, worldActorsOnly: true }).wait();
                 if (result) {
                     await this.selectShape(result);
                 }
