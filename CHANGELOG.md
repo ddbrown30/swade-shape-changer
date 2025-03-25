@@ -3,6 +3,7 @@
 ## 0.4.0
 
 * Added TCAL support
+* Improved styling of the dialog
 
 ## 0.3.0
 
