@@ -58,6 +58,7 @@
 .change-shape-dialog footer.form-footer {
   display: flex;
   gap: 0.5rem;
+  padding-top: 10px;
 }
 
 .change-shape-dialog footer.form-footer button {
