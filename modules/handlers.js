@@ -14,6 +14,8 @@ export class Handlers {
     /**
      */
     static async onReady() {
+        if (!game.user.isGM) return;
+        
         if (!game.modules.get("tcal")?.active) {
             if (!Utils.getSetting(SSC_CONFIG.SETTING_KEYS.ignoreTcalWarning)) {
                 foundry.applications.api.DialogV2.wait({
