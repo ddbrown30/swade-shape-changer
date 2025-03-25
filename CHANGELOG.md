@@ -1,9 +1,13 @@
 # Changelog
 
-## 0.4.0
+## 0.5.0
 
 * Added TCAL support
 * Improved styling of the dialog
+
+## 0.4.0
+
+* Added Sequencer support
 
 ## 0.3.0
 
