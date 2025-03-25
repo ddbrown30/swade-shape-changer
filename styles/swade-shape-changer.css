@@ -79,3 +79,7 @@
   align-items: center;
   gap: 0.5rem;
 }
+
+.ssc .select-section {
+  padding-bottom: 10px;
+}

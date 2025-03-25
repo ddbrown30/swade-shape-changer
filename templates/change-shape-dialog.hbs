@@ -1,7 +1,7 @@
 <div class='ssc'>
     <form id="change-shape-form">
         {{#if targets.length }}
-        <div>
+        <div class="select-section">
             <label for="target">{{{localize "SSC.ChangeShapeDialog.TargetSelectionLabel"}}}</label>
             <select name="target" class="shape" title="">
                 {{selectOptions targets selected=target localize=true valueAttr="name" labelAttr="label"}}
@@ -10,9 +10,7 @@
         </div>
         {{/if}}
 
-        {{#if targets.length}}
-        <p>
-        {{/if}}
+        <div class="select-section">
             <label for="shape">{{{localize "SSC.ChangeShapeDialog.ShapeSelectionLabel"}}}</label>
             <div class="shape-row">
                 <select name="shape" class="shape" title="">
@@ -22,17 +20,15 @@
                 <a class="open-actor-browser-button" aria-label="{{{localize " ACTOR_BROWSER.OpenActorBrowser"}}}" role="button" data-tooltip="ACTOR_BROWSER.OpenActorBrowser"><i class="fas fa-folder-user fa-lg"></i></a>
             {{/if}}
             </div>
-        {{#if targets.length}}
-        </p>
-        {{/if}}
+        </div>
 
-        <p>
+        <div class="select-section">
             <label for="changeType">{{{localize "SSC.ChangeShapeDialog.ShapeChangeTypesLabel"}}}</label>
             <select name="changeType" class="shape" title="">
                 {{selectOptions changeTypes selected=changeType localize=true}}
             </select>
             <br>
-        </p>
+        </div>
 
         <div>
             <input type="checkbox" id="animal-smarts" style="vertical-align: middle;">
