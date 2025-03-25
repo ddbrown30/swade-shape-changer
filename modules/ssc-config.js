@@ -33,5 +33,6 @@ export const SETTING_KEYS = {
     changeAnim: "changeAnim",
     changeDelay: "changeDelay",
     animScale: "animScale",
+    ignoreTcalWarning: "ignoreTcalWarning",
 }
 

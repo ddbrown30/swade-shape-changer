@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.4.0
+
+* Added TCAL support
+
 ## 0.3.0
 
 * Added drag+drop support to the change shape dialog

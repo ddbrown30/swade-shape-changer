@@ -1,3 +1,4 @@
+import { ShapeChanger } from "./shape-changer.js";
 import * as SSC_CONFIG from "./ssc-config.js";
 import { Utils } from "./utils.js";
 
@@ -13,6 +14,26 @@ export class Handlers {
     /**
      */
     static async onReady() {
+        if (!game.modules.get("tcal")?.active) {
+            if (!Utils.getSetting(SSC_CONFIG.SETTING_KEYS.ignoreTcalWarning)) {
+                foundry.applications.api.DialogV2.wait({
+                    window: { title: game.i18n.localize("SSC.TcalWarning.Title") },
+                    content: game.i18n.localize("SSC.TcalWarning.Body"),
+                    position: { width: 400 },
+                    buttons: [
+                        {
+                            label: "SSC.Okay",
+                            action: "okay",
+                        },
+                        {
+                            label: "SSC.TcalWarning.IgnoreButton",
+                            action: "ignore",
+                            callback: (event, button, dialog) => Utils.setSetting(SSC_CONFIG.SETTING_KEYS.ignoreTcalWarning, true)
+                        },
+                    ],
+                });
+            }
+        }
     }
 
     /**
@@ -50,7 +71,7 @@ export class Handlers {
                     Handlers.addActorToShapeChangePower(data, this);
                 }
             }
-    
+
             //Add the drop binding to the item sheet
             const dragDrop = new DragDrop({
                 dragSelector: null,
@@ -98,7 +119,7 @@ export class Handlers {
             let shape = shapes.find(e => e == ev.currentTarget.dataset.shapeId);
             const shapeActor = fromUuidSync(shape);
             if (shapeActor) {
-                shapeActor.sheet._canUserView = function() { return true; };
+                shapeActor.sheet._canUserView = function () { return true; };
                 shapeActor.sheet.render(true);
             }
         });
@@ -123,17 +144,7 @@ export class Handlers {
      * @param {Item} power //The shape change power item
      */
     static addActorToShapeChangePower(data, power) {
-        if (data.uuid.startsWith("Compendium")) {
-            //We don't support using actors directly from the compendium
-            //Show a warning popup and return
-            foundry.applications.api.DialogV2.prompt({
-                window: { title: game.i18n.localize("SSC.CompendiumWarning.Title") },
-                content: game.i18n.localize("SSC.CompendiumWarning.Body"),
-                position: { width: 400 },
-                rejectClose: false,
-            });
-            return;
-        }
+        if (!ShapeChanger.validateUuid(data.uuid)) return;
 
         let shapes = power.getFlag(SSC_CONFIG.NAME, SSC_CONFIG.FLAGS.shapes);
         shapes = shapes ? shapes : [];
@@ -189,12 +200,12 @@ export class Handlers {
         $('<section>').addClass("tab human").attr('data-tab', 'human').html(content).insertAfter($('.tab:last', html));
 
         html.find("button.file-picker").click(Handlers.activateFilePicker.bind(app));
-        
+
         html.find("input[name=human-img-path").on("change", async event => {
             await ability.setFlag(SSC_CONFIG.NAME, SSC_CONFIG.FLAGS.humanTokenImg, event.target.value);
             app.render(true);
         });
-        
+
         html.find("input[name=scale").on("change", async event => {
             await ability.setFlag(SSC_CONFIG.NAME, SSC_CONFIG.FLAGS.humanTokenScale, event.target.value);
             app.render(true);
@@ -208,20 +219,20 @@ export class Handlers {
     }
 
     static activateFilePicker(event) {
-      event.preventDefault();
-      
-      const button = event.currentTarget;
-      const target = button.dataset.target;
-      const field = button.form[target] || null;
+        event.preventDefault();
 
-      const options = {
-        field: field,
-        type: button.dataset.type,
-        current: field?.value ?? "",
-        button: button
-      };
+        const button = event.currentTarget;
+        const target = button.dataset.target;
+        const field = button.form[target] || null;
 
-      const fp = new FilePicker(options);
-      return fp.browse();
+        const options = {
+            field: field,
+            type: button.dataset.type,
+            current: field?.value ?? "",
+            button: button
+        };
+
+        const fp = new FilePicker(options);
+        return fp.browse();
     }
 }

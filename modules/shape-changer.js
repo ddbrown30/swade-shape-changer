@@ -18,7 +18,7 @@ export class ShapeChanger {
         const scene = game.scenes.find(s => s.id == sceneId);
         let originalTokenDoc = scene.tokens.find(t => t.id == originalTokenId);
         const originalActor = originalTokenDoc.actor;
-        const actorToCreate = await fromUuid(actorToCreateId);
+        const actorToCreate = actorToCreateId.startsWith("Compendium") ? await game.tcal.importTransientActor(actorToCreateId) : await fromUuid(actorToCreateId);
         
         const newTokenDoc = await actorToCreate.getTokenDocument({
             x: originalTokenDoc.x,
@@ -429,5 +429,20 @@ export class ShapeChanger {
         await ShapeChanger.swapTokensInCombat(originalTokenDoc, createdTokenDoc);
 
         return createdTokenDoc;
+    }
+
+    static validateUuid(uuid) {
+        if (game.modules.get("tcal")?.active) return true; //If TCAL is active, we support compendium actors
+        if (!uuid.startsWith("Compendium")) return true; //This is not a compendium actor
+
+        //We don't support using actors directly from the compendium
+        //Show a warning popup and return
+        foundry.applications.api.DialogV2.prompt({
+            window: { title: game.i18n.localize("SSC.CompendiumWarning.Title") },
+            content: game.i18n.localize("SSC.CompendiumWarning.Body"),
+            position: { width: 400 },
+            rejectClose: false,
+        });
+        return false;
     }
 }

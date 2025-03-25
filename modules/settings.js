@@ -53,4 +53,11 @@ export function registerSettings() {
             default: 2,
         });
     }
+    
+    Utils.registerSetting(SSC_CONFIG.SETTING_KEYS.ignoreTcalWarning, {
+        scope: "world",
+        type: Boolean,
+        config: false,
+        default: false
+    });
 }

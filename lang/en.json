@@ -46,7 +46,7 @@
         },
         "CompendiumWarning": {
             "Title": "Compendium Actors",
-            "Body": "Directly using compendium actors is not supported.<br><br>Please import the actor into your world first and then use the imported actor.<br>"
+            "Body": "Directly using compendium actors is not supported with the Transient Compendium Actors Library module enabled.<br><br>Please either enable that module or import the actor into your world first and then use the imported actor.<br>"
         },
         "DeleteTokenWarning": {
             "Title": "Confirm Delete?",
@@ -70,6 +70,11 @@
         "SUCCDisableConfirmation": {
             "Title": "SUCC Support Disabled",
             "Body": "SUCC support has been disabled. You can reenable this at any time from the SWADE Shape Changer options.<br>"
+        },
+        "TcalWarning": {
+            "Title": "TCAL Recommended",
+            "Body": "The Transient Compendium Actor Library is not active.<br><br>It is highly recommended to enable this module for use with SWADE Shape Changer as it will allow you to shape change into compendium actors directly.<br>",
+            "IgnoreButton": "Ignore"
         },
         "RaiseEffectName": "Shape Change Raise",
 

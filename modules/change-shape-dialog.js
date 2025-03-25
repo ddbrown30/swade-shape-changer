@@ -118,7 +118,8 @@ export class ChangeShapeDialog extends HandlebarsApplicationMixin(DocumentSheetV
         if (game.actorBrowser) {
             const openBrowserButton = this.element.querySelector(".open-actor-browser-button");
             openBrowserButton.addEventListener("click", async event => {
-                let result = await new game.actorBrowser.ActorBrowserDialog({ selector: true, worldActorsOnly: true }).wait();
+                let worldActorsOnly = !game.modules.get("tcal")?.active; //If TCAL isn't enabled, we only want to browse for world actors
+                let result = await new game.actorBrowser.ActorBrowserDialog({ selector: true, worldActorsOnly: worldActorsOnly }).wait();
                 if (result) {
                     await this.selectShape(result);
                 }
@@ -146,17 +147,7 @@ export class ChangeShapeDialog extends HandlebarsApplicationMixin(DocumentSheetV
     
 
     async selectShape(shapeUuid) {
-        if (shapeUuid.startsWith("Compendium")) {
-            //We don't support using actors directly from the compendium
-            //Show a warning popup and return
-            foundry.applications.api.DialogV2.prompt({
-                window: { title: game.i18n.localize("SSC.CompendiumWarning.Title") },
-                content: game.i18n.localize("SSC.CompendiumWarning.Body"),
-                position: { width: 400 },
-                rejectClose: false,
-            });
-            return;
-        }
+        if (!ShapeChanger.validateUuid(shapeUuid)) return;
 
         const shapeActor = await fromUuid(shapeUuid);
         if (shapeActor) {
