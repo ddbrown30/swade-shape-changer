@@ -67,7 +67,7 @@ export class ShapeChangerAPI {
 
         await game.swadeShapeChanger.socket.executeAsGM("revertChangeForToken", createdToken.scene.id, createdToken.id, originalToken.id);
     }
-    
+
     /**
      * Opens the dialog for executing a werewolf transformation
      * @param {Token} sourceToken //The token that is the source of the shape change
@@ -88,11 +88,13 @@ export class ShapeChangerAPI {
             content: game.i18n.localize("SSC.WerewolfToHumanDialog.Body"),
             position: { width: 400 },
             yes: {
-                callback: async (event, button, dialog) =>
+                callback: async (event, button, dialog) => {
+                    dialog.close();
                     await game.swadeShapeChanger.socket.executeAsGM(
                         "werewolfToHuman",
                         sourceToken.scene.id,
-                        sourceToken.id)
+                        sourceToken.id);
+                }
             },
             defaultYes: true
         });
