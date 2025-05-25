@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.0
+
+* v13 Update
+
 ## 0.5.0
 
 * Added TCAL support
