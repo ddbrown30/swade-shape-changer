@@ -3,8 +3,8 @@
   "title": "SWADE Shape Changer",
   "description": "<p>A module that helps to automate the shape change power.</p>",
   "compatibility": {
-    "minimum": "12",
-    "verified": "12.331"
+    "minimum": "13",
+    "verified": "13.344"
   },
   "packs": [
     {
@@ -28,8 +28,8 @@
         "type": "system",
         "manifest": "https://gitlab.com/api/v4/projects/16269883/packages/generic/swade/latest/system.json",
         "compatibility": {
-          "minimum": "4.1.1",
-          "verified": "4.1.1"
+          "minimum": "5.0.0",
+          "verified": "5.0.0"
         }
       }
     ],
@@ -45,32 +45,32 @@
         "id": "tcal",
         "type": "module",
         "compatibility": {
-          "minimum": "0.1.0",
-          "verified": "0.1.0"
+          "minimum": "1.0.0",
+          "verified": "1.0.0"
         }
       },
       {
         "id": "succ",
         "type": "module",
         "compatibility": {
-          "minimum": "4.0.2",
-          "verified": "4.0.2"
+          "minimum": "6.0.0",
+          "verified": "6.0.0"
         }
       },
       {
         "id": "sequencer",
         "type": "module",
         "compatibility": {
-          "minimum": "3.4.7",
-          "verified": "3.4.7"
+          "minimum": "3.6.1",
+          "verified": "3.6.1"
         }
       },
       {
         "id": "actor-browser",
         "type": "module",
         "compatibility": {
-          "minimum": "0.1.0",
-          "verified": "0.1.0"
+          "minimum": "1.0.0",
+          "verified": "1.0.0"
         }
       }
     ]
