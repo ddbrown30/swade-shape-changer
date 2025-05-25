@@ -31,13 +31,6 @@ export class ShapeChanger {
             actorLink: false, //We always want to unlink the actor so that we don't modify the original
         });
 
-        for (let detMod of newTokenDoc.detectionModes) {
-            if (detMod.range == Infinity) {
-                //Temp hack until Foundry fixes the data validation on range
-                detMod.range = null;
-            }
-        }
-
         newTokenDoc.actor.type = originalTokenDoc.actor.type;
 
         await ShapeChanger.playSequencerAnimation(scene, originalTokenDoc, newTokenDoc);
@@ -53,7 +46,7 @@ export class ShapeChanger {
             "hidden": true
         }], { animate: false });
 
-        let createdTokenDoc = (await canvas.scene.createEmbeddedDocuments("Token", [newTokenDoc.toObject(false)]))[0];
+        let createdTokenDoc = (await canvas.scene.createEmbeddedDocuments("Token", [newTokenDoc.toObject()]))[0];
         let createdActor = createdTokenDoc.actor;
 
         //The shape change power retains the edges, hindrances, powers, and smarts and spirit linked skills of the original form
@@ -373,17 +366,10 @@ export class ShapeChanger {
             "texture.scaleY": humanTokenScale,
         });
 
-        for (let detMod of newTokenDoc.detectionModes) {
-            if (detMod.range == Infinity) {
-                //Temp hack until Foundry fixes the data validation on range
-                detMod.range = null;
-            }
-        }
-
         //Mark the token as a change source so that we warn the user if they try to delete it
         await originalTokenDoc.setFlag(SSC_CONFIG.NAME, SSC_CONFIG.FLAGS.isChangeSource, true);
 
-        let createdTokenDoc = (await canvas.scene.createEmbeddedDocuments("Token", [newTokenDoc.toObject(false)]))[0];
+        let createdTokenDoc = (await canvas.scene.createEmbeddedDocuments("Token", [newTokenDoc.toObject()]))[0];
         let createdActor = createdTokenDoc.actor;
 
         //Hide the original token and move it to the side
