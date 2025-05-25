@@ -19,7 +19,7 @@ export class ShapeChanger {
         let originalTokenDoc = scene.tokens.find(t => t.id == originalTokenId);
         const originalActor = originalTokenDoc.actor;
         const actorToCreate = actorToCreateId.startsWith("Compendium") ? await game.tcal.importTransientActor(actorToCreateId) : await fromUuid(actorToCreateId);
-        
+
         const newTokenDoc = await actorToCreate.getTokenDocument({
             x: originalTokenDoc.x,
             y: originalTokenDoc.y,
@@ -31,13 +31,20 @@ export class ShapeChanger {
             actorLink: false, //We always want to unlink the actor so that we don't modify the original
         });
 
+        for (let detMod of newTokenDoc.detectionModes) {
+            if (detMod.range == Infinity) {
+                //Temp hack until Foundry fixes the data validation on range
+                detMod.range = null;
+            }
+        }
+
         newTokenDoc.actor.type = originalTokenDoc.actor.type;
 
         await ShapeChanger.playSequencerAnimation(scene, originalTokenDoc, newTokenDoc);
 
         //Mark the token as a shape change source so that we warn the user if they try to delete it
         await originalTokenDoc.setFlag(SSC_CONFIG.NAME, SSC_CONFIG.FLAGS.isChangeSource, true);
-        
+
         //Hide the original token and move it to the side
         await canvas.scene.updateEmbeddedDocuments("Token", [{
             _id: originalTokenDoc.id,
@@ -177,12 +184,12 @@ export class ShapeChanger {
         if (!Sequencer.Database.entryExists(changeAnim)) {
             return;
         }
-        
+
         function getCenterPoint(tokenDoc, grid) {
             let { x, y, width, height } = tokenDoc;
-            
+
             width *= grid.sizeX;
-            height *= grid.sizeY;       
+            height *= grid.sizeY;
             return { x: x + (width / 2), y: y + (height / 2) };
         }
         const oldCenterPoint = getCenterPoint(sourceTokenDoc, scene.grid);
@@ -200,7 +207,7 @@ export class ShapeChanger {
         .scale(animScale)
         .fadeIn(250)
         .timeRange(0, changeDelay);
-        
+
         changeSeq.effect()
         .file(changeAnim)
         .atLocation(newCenterPoint, {gridUnits: true})
@@ -342,7 +349,7 @@ export class ShapeChanger {
         let originalTokenDoc = game.scenes.find(s => s.id == sceneId).tokens.find(t => t.id == originalTokenId);
         const originalActor = originalTokenDoc.actor;
         const actorToCreate = await fromUuid(originalTokenDoc.actor.uuid);
-        
+
         let transformationAbility = originalActor.items.find((item) => Utils.isTransformationAbility(item));
         let humanTokenImg = "";
         let humanTokenScale = 1;
@@ -359,11 +366,19 @@ export class ShapeChanger {
         const newTokenDoc = await actorToCreate.getTokenDocument({
             x: originalTokenDoc.x,
             y: originalTokenDoc.y,
+            "sight.enabled": originalTokenDoc.sight.enabled,
             actorLink: false, //We always want to unlink the actor so that we don't modify the original
             "texture.src": humanTokenImg,
             "texture.scaleX": humanTokenScale,
             "texture.scaleY": humanTokenScale,
         });
+
+        for (let detMod of newTokenDoc.detectionModes) {
+            if (detMod.range == Infinity) {
+                //Temp hack until Foundry fixes the data validation on range
+                detMod.range = null;
+            }
+        }
 
         //Mark the token as a change source so that we warn the user if they try to delete it
         await originalTokenDoc.setFlag(SSC_CONFIG.NAME, SSC_CONFIG.FLAGS.isChangeSource, true);

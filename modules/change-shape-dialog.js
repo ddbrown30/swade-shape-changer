@@ -114,7 +114,7 @@ export class ChangeShapeDialog extends HandlebarsApplicationMixin(DocumentSheetV
             this.changeType = selection.val();
             this.render();
         });
-        
+
         if (game.actorBrowser) {
             const openBrowserButton = this.element.querySelector(".open-actor-browser-button");
             openBrowserButton.addEventListener("click", async event => {
@@ -128,14 +128,14 @@ export class ChangeShapeDialog extends HandlebarsApplicationMixin(DocumentSheetV
 
         //Local function for handling actors being dropped on the dialog
         async function onDrop(event) {
-            const data = TextEditor.getDragEventData(event);
+            const data = foundry.applications.ux.TextEditor.implementation.getDragEventData(event);
             if (data.type == "Actor") {
                 this.selectShape(data.uuid);
             }
         }
 
         //Add the drop binding to the dialog
-        const dragDrop = new DragDrop({
+        const dragDrop = new foundry.applications.ux.DragDrop.implementation({
             dragSelector: null,
             dropSelector: null,
             callbacks: {
@@ -144,7 +144,7 @@ export class ChangeShapeDialog extends HandlebarsApplicationMixin(DocumentSheetV
         });
         dragDrop.bind(this.element);
     }
-    
+
 
     async selectShape(shapeUuid) {
         if (!ShapeChanger.validateUuid(shapeUuid)) return;
