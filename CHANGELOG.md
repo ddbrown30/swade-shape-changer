@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.2
+
+* Fixed an error when not using SUCC
+
 ## 1.0.1
 
 * Small bug fix
