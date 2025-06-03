@@ -251,8 +251,10 @@ export class ShapeChanger {
         const effectIdsToDelete = effectsToDelete.map(e => e.id);
         await originalActor.deleteEmbeddedDocuments("ActiveEffect", effectIdsToDelete, { render: false });
 
-        //We're removing the shape change condition here rather than just not adding it below so that it will process macros and output to chat
-        await game.succ.removeCondition(SSC_CONFIG.SUCC_SHAPE_CHANGE, createdTokenDoc);
+        if (Utils.useSUCC()) {
+            //We're removing the shape change condition here rather than just not adding it below so that it will process macros and output to chat
+            await game.succ.removeCondition(SSC_CONFIG.SUCC_SHAPE_CHANGE, createdTokenDoc);
+        }
 
         let effectsToAdd = createdActor.effects.filter(effect => effect.isTemporary);
         await originalActor.createEmbeddedDocuments("ActiveEffect", effectsToAdd, { render: false });
