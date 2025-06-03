@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.5.1
+
+* Fixed an error when not using SUCC
+
 ## 0.5.0
 
 * Added TCAL support
