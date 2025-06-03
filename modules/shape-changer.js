@@ -19,7 +19,7 @@ export class ShapeChanger {
         let originalTokenDoc = scene.tokens.find(t => t.id == originalTokenId);
         const originalActor = originalTokenDoc.actor;
         const actorToCreate = actorToCreateId.startsWith("Compendium") ? await game.tcal.importTransientActor(actorToCreateId) : await fromUuid(actorToCreateId);
-        
+
         const newTokenDoc = await actorToCreate.getTokenDocument({
             x: originalTokenDoc.x,
             y: originalTokenDoc.y,
@@ -37,7 +37,7 @@ export class ShapeChanger {
 
         //Mark the token as a shape change source so that we warn the user if they try to delete it
         await originalTokenDoc.setFlag(SSC_CONFIG.NAME, SSC_CONFIG.FLAGS.isChangeSource, true);
-        
+
         //Hide the original token and move it to the side
         await canvas.scene.updateEmbeddedDocuments("Token", [{
             _id: originalTokenDoc.id,
@@ -177,12 +177,12 @@ export class ShapeChanger {
         if (!Sequencer.Database.entryExists(changeAnim)) {
             return;
         }
-        
+
         function getCenterPoint(tokenDoc, grid) {
             let { x, y, width, height } = tokenDoc;
-            
+
             width *= grid.sizeX;
-            height *= grid.sizeY;       
+            height *= grid.sizeY;
             return { x: x + (width / 2), y: y + (height / 2) };
         }
         const oldCenterPoint = getCenterPoint(sourceTokenDoc, scene.grid);
@@ -200,7 +200,7 @@ export class ShapeChanger {
         .scale(animScale)
         .fadeIn(250)
         .timeRange(0, changeDelay);
-        
+
         changeSeq.effect()
         .file(changeAnim)
         .atLocation(newCenterPoint, {gridUnits: true})
@@ -251,8 +251,10 @@ export class ShapeChanger {
         const effectIdsToDelete = effectsToDelete.map(e => e.id);
         await originalActor.deleteEmbeddedDocuments("ActiveEffect", effectIdsToDelete, { render: false });
 
-        //We're removing the shape change condition here rather than just not adding it below so that it will process macros and output to chat
-        await game.succ.removeCondition(SSC_CONFIG.SUCC_SHAPE_CHANGE, createdTokenDoc);
+        if (Utils.useSUCC()) {
+            //We're removing the shape change condition here rather than just not adding it below so that it will process macros and output to chat
+            await game.succ.removeCondition(SSC_CONFIG.SUCC_SHAPE_CHANGE, createdTokenDoc);
+        }
 
         let effectsToAdd = createdActor.effects.filter(effect => effect.isTemporary);
         await originalActor.createEmbeddedDocuments("ActiveEffect", effectsToAdd, { render: false });
@@ -342,7 +344,7 @@ export class ShapeChanger {
         let originalTokenDoc = game.scenes.find(s => s.id == sceneId).tokens.find(t => t.id == originalTokenId);
         const originalActor = originalTokenDoc.actor;
         const actorToCreate = await fromUuid(originalTokenDoc.actor.uuid);
-        
+
         let transformationAbility = originalActor.items.find((item) => Utils.isTransformationAbility(item));
         let humanTokenImg = "";
         let humanTokenScale = 1;
