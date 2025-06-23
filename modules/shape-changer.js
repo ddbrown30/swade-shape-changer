@@ -392,21 +392,34 @@ export class ShapeChanger {
             "weakness"
         ];
 
+        const WEREWOLF_WEAPONS = [
+            "natural-bite",
+            "natural-claws"
+        ];
+
         let itemsToRemove = [];
         for (let item of createdActor.items) {
             if (item.type == "edge") {
-                //Werewolves do not keep their werewolf edges in human form
+                // Werewolves do not keep their werewolf edges in human form
                 if (item.system.requirements.find((r) => r.selector == "werewolf")){
                     itemsToRemove.push(item);
                 }
             } else if (item.type == "ability") {
-                //Werewolves do not keep their werewolf abilities in human form
+                // Werewolves do not keep their werewolf abilities in human form
                 if (WEREWOLF_ABILITIES.find((a) => a == item.system.swid)) {
                     itemsToRemove.push(item);
                 }
             } else if (item.type == "hindrance") {
-                //Werewolves only have the weakness to silvered weapons while in werewolf form
+                // Werewolves only have the weakness to silvered weapons while in werewolf form
+                // This does not appear to be required on v13, but leaving it here doesn't appear to hurt.
                 if (item.name.toLowerCase().includes("weakness") && item.system.description.toLowerCase().includes("silvered weapons")) {
+                    itemsToRemove.push(item);
+                }
+            }
+            else if (item.type == "weapon") {
+                // Werewolves do not keep their werewolf weapons in human form
+                // This is required as removing the "Bite/Claws" ability does not remove the associated bite and claw weapons from inventory
+                if (WEREWOLF_WEAPONS.find((a) => a == item.system.swid)) {
                     itemsToRemove.push(item);
                 }
             }
@@ -416,7 +429,9 @@ export class ShapeChanger {
             await item.delete();
         }
 
-        //Werewolves increase agility, strength and vigor by 2 die types so we need to remove that
+        // Todo: revert token vision back to basic. Only werewolves have infravision.
+
+        // Update the name
         let actorUpdateData = {
             name: originalActor.name,
             "system.details.autoCalcToughness": true //In the off chance this was disabled, we need to enable it so the human form is correct
