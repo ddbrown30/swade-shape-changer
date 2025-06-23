@@ -387,7 +387,9 @@ export class ShapeChanger {
             "cannot-speak",
             "speed",
             "regeneration-slow",
-            "infravision"
+            "infravision",
+            "ferocity",
+            "weakness"
         ];
 
         let itemsToRemove = [];
@@ -417,9 +419,6 @@ export class ShapeChanger {
         //Werewolves increase agility, strength and vigor by 2 die types so we need to remove that
         let actorUpdateData = {
             name: originalActor.name,
-            "system.attributes.agility.die.sides": originalActor._source.system.attributes.agility.die.sides - 4,
-            "system.attributes.strength.die.sides": originalActor._source.system.attributes.strength.die.sides - 4,
-            "system.attributes.vigor.die.sides": originalActor._source.system.attributes.vigor.die.sides - 4,
             "system.details.autoCalcToughness": true //In the off chance this was disabled, we need to enable it so the human form is correct
         };
 
