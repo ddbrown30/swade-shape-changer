@@ -375,6 +375,16 @@ export class ShapeChanger {
         let createdTokenDoc = (await canvas.scene.createEmbeddedDocuments("Token", [newTokenDoc.toObject()]))[0];
         let createdActor = createdTokenDoc.actor;
 
+        // Disable the Heat Seeing and Heat Sensing vision modes on the human form token
+        const WEREWOLF_SIGHT_MODES = ["seeHeat", "senseHeat"]
+        const humanDetectionModes = createdTokenDoc.detectionModes.map(mode => 
+            WEREWOLF_SIGHT_MODES.includes(mode.id) ? { ...mode, enabled: false } : mode
+        ).filter(m => m.range != "Infinity" && m.range != 0);
+        await canvas.scene.updateEmbeddedDocuments("Token", [{
+            _id: createdTokenDoc.id,
+            detectionModes: humanDetectionModes,
+        }], { animate: false });
+
         //Hide the original token and move it to the side
         await canvas.scene.updateEmbeddedDocuments("Token", [{
             _id: originalTokenDoc.id,
