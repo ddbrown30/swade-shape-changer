@@ -362,6 +362,7 @@ export class ShapeChanger {
             x: originalTokenDoc.x,
             y: originalTokenDoc.y,
             "sight.enabled": originalTokenDoc.sight.enabled,
+            "sight.visionMode": "basic", // Humans only have basic vision. This allows the werewolf token to have infravision enabled
             actorLink: false, //We always want to unlink the actor so that we don't modify the original
             "texture.src": humanTokenImg,
             "texture.scaleX": humanTokenScale,
@@ -428,8 +429,6 @@ export class ShapeChanger {
         for (let item of itemsToRemove) {
             await item.delete();
         }
-
-        // Todo: revert token vision back to basic. Only werewolves have infravision.
 
         // Update the name
         let actorUpdateData = {
