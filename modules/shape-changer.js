@@ -362,7 +362,7 @@ export class ShapeChanger {
             x: originalTokenDoc.x,
             y: originalTokenDoc.y,
             "sight.enabled": originalTokenDoc.sight.enabled,
-            "sight.visionMode": "basic", // Humans only have basic vision. This allows the werewolf token to have infravision enabled
+            "sight.visionMode": "basic", //Humans only have basic vision. This allows the werewolf token to have infravision enabled
             actorLink: false, //We always want to unlink the actor so that we don't modify the original
             "texture.src": humanTokenImg,
             "texture.scaleX": humanTokenScale,
@@ -375,7 +375,7 @@ export class ShapeChanger {
         let createdTokenDoc = (await canvas.scene.createEmbeddedDocuments("Token", [newTokenDoc.toObject()]))[0];
         let createdActor = createdTokenDoc.actor;
 
-        // Disable the Heat Seeing and Heat Sensing vision modes on the human form token
+        //Disable the Heat Seeing and Heat Sensing vision modes on the human form token
         const WEREWOLF_SIGHT_MODES = ["seeHeat", "senseHeat"]
         const humanDetectionModes = createdTokenDoc.detectionModes.map(mode => 
             WEREWOLF_SIGHT_MODES.includes(mode.id) ? { ...mode, enabled: false } : mode
@@ -411,25 +411,25 @@ export class ShapeChanger {
         let itemsToRemove = [];
         for (let item of createdActor.items) {
             if (item.type == "edge") {
-                // Werewolves do not keep their werewolf edges in human form
+                //Werewolves do not keep their werewolf edges in human form
                 if (item.system.requirements.find((r) => r.selector == "werewolf")){
                     itemsToRemove.push(item);
                 }
             } else if (item.type == "ability") {
-                // Werewolves do not keep their werewolf abilities in human form
+                //Werewolves do not keep their werewolf abilities in human form
                 if (WEREWOLF_ABILITIES.find((a) => a == item.system.swid)) {
                     itemsToRemove.push(item);
                 }
             } else if (item.type == "hindrance") {
-                // Werewolves only have the weakness to silvered weapons while in werewolf form
-                // This does not appear to be required on v13, but leaving it here doesn't appear to hurt.
+                //Werewolves only have the weakness to silvered weapons while in werewolf form
+                //This does not appear to be required on v13, but leaving it here doesn't appear to hurt.
                 if (item.name.toLowerCase().includes("weakness") && item.system.description.toLowerCase().includes("silvered weapons")) {
                     itemsToRemove.push(item);
                 }
             }
             else if (item.type == "weapon") {
-                // Werewolves do not keep their werewolf weapons in human form
-                // This is required as removing the "Bite/Claws" ability does not remove the associated bite and claw weapons from inventory
+                //Werewolves do not keep their werewolf weapons in human form
+                //This is required as removing the "Bite/Claws" ability does not remove the associated bite and claw weapons from inventory
                 if (WEREWOLF_WEAPONS.find((a) => a == item.system.swid)) {
                     itemsToRemove.push(item);
                 }
@@ -440,7 +440,7 @@ export class ShapeChanger {
             await item.delete();
         }
 
-        // Update the name
+        //Update the name
         let actorUpdateData = {
             name: originalActor.name,
             "system.details.autoCalcToughness": true //In the off chance this was disabled, we need to enable it so the human form is correct
