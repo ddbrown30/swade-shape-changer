@@ -422,7 +422,6 @@ export class ShapeChanger {
                 }
             } else if (item.type == "hindrance") {
                 //Werewolves only have the weakness to silvered weapons while in werewolf form
-                //This does not appear to be required on v13, but leaving it here doesn't appear to hurt.
                 if (item.name.toLowerCase().includes("weakness") && item.system.description.toLowerCase().includes("silvered weapons")) {
                     itemsToRemove.push(item);
                 }
