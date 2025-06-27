@@ -408,6 +408,10 @@ export class ShapeChanger {
             "natural-claws"
         ];
 
+        //To handle the variant case where an actor may either have the Ferocity ability,
+        //or manually adjusted attributes, flag whether Ferocity is detected.
+        let hasFerocity = false;
+
         let itemsToRemove = [];
         for (let item of createdActor.items) {
             if (item.type == "edge") {
@@ -418,6 +422,9 @@ export class ShapeChanger {
             } else if (item.type == "ability") {
                 //Werewolves do not keep their werewolf abilities in human form
                 if (WEREWOLF_ABILITIES.find((a) => a == item.system.swid)) {
+                    if (item.system.swid == "ferocity") {
+                        hasFerocity = true;
+                    }
                     itemsToRemove.push(item);
                 }
             } else if (item.type == "hindrance") {
@@ -444,6 +451,14 @@ export class ShapeChanger {
             name: originalActor.name,
             "system.details.autoCalcToughness": true //In the off chance this was disabled, we need to enable it so the human form is correct
         };
+
+        //Werewolves increase agility, strength and vigor by 2 die types so we need to remove that
+        //manually if the actor isn't using the Ferocity ability
+        if (!hasFerocity) {
+            actorUpdateData["system.attributes.agility.die.sides"] = originalActor._source.system.attributes.agility.die.sides - 4;
+            actorUpdateData["system.attributes.strength.die.sides"] = originalActor._source.system.attributes.strength.die.sides - 4;
+            actorUpdateData["system.attributes.vigor.die.sides"] = originalActor._source.system.attributes.vigor.die.sides - 4;
+        }
 
         await createdActor.update(actorUpdateData);
 
