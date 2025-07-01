@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.1.0
+
+* Several fixes to werewolf transformation (By DC23)
+  
 ## 1.0.2
 
 * Fixed an error when not using SUCC
