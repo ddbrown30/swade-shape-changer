@@ -362,6 +362,7 @@ export class ShapeChanger {
             x: originalTokenDoc.x,
             y: originalTokenDoc.y,
             "sight.enabled": originalTokenDoc.sight.enabled,
+            "sight.visionMode": "basic", //Humans only have basic vision. This allows the werewolf token to have infravision enabled
             actorLink: false, //We always want to unlink the actor so that we don't modify the original
             "texture.src": humanTokenImg,
             "texture.scaleX": humanTokenScale,
@@ -373,6 +374,16 @@ export class ShapeChanger {
 
         let createdTokenDoc = (await canvas.scene.createEmbeddedDocuments("Token", [newTokenDoc.toObject()]))[0];
         let createdActor = createdTokenDoc.actor;
+
+        //Disable the Heat Seeing and Heat Sensing vision modes on the human form token
+        const WEREWOLF_SIGHT_MODES = ["seeHeat", "senseHeat"]
+        const humanDetectionModes = createdTokenDoc.detectionModes.map(mode => 
+            WEREWOLF_SIGHT_MODES.includes(mode.id) ? { ...mode, enabled: false } : mode
+        ).filter(m => m.range != "Infinity" && m.range != 0);
+        await canvas.scene.updateEmbeddedDocuments("Token", [{
+            _id: createdTokenDoc.id,
+            detectionModes: humanDetectionModes,
+        }], { animate: false });
 
         //Hide the original token and move it to the side
         await canvas.scene.updateEmbeddedDocuments("Token", [{
@@ -387,8 +398,19 @@ export class ShapeChanger {
             "cannot-speak",
             "speed",
             "regeneration-slow",
-            "infravision"
+            "infravision",
+            "ferocity",
+            "weakness"
         ];
+
+        const WEREWOLF_WEAPONS = [
+            "natural-bite",
+            "natural-claws"
+        ];
+
+        //To handle the variant case where an actor may either have the Ferocity ability,
+        //or manually adjusted attributes, flag whether Ferocity is detected.
+        let hasFerocity = false;
 
         let itemsToRemove = [];
         for (let item of createdActor.items) {
@@ -400,11 +422,21 @@ export class ShapeChanger {
             } else if (item.type == "ability") {
                 //Werewolves do not keep their werewolf abilities in human form
                 if (WEREWOLF_ABILITIES.find((a) => a == item.system.swid)) {
+                    if (item.system.swid == "ferocity") {
+                        hasFerocity = true;
+                    }
                     itemsToRemove.push(item);
                 }
             } else if (item.type == "hindrance") {
                 //Werewolves only have the weakness to silvered weapons while in werewolf form
                 if (item.name.toLowerCase().includes("weakness") && item.system.description.toLowerCase().includes("silvered weapons")) {
+                    itemsToRemove.push(item);
+                }
+            }
+            else if (item.type == "weapon") {
+                //Werewolves do not keep their werewolf weapons in human form
+                //This is required as removing the "Bite/Claws" ability does not remove the associated bite and claw weapons from inventory
+                if (WEREWOLF_WEAPONS.find((a) => a == item.system.swid)) {
                     itemsToRemove.push(item);
                 }
             }
@@ -414,14 +446,19 @@ export class ShapeChanger {
             await item.delete();
         }
 
-        //Werewolves increase agility, strength and vigor by 2 die types so we need to remove that
+        //Update the name
         let actorUpdateData = {
             name: originalActor.name,
-            "system.attributes.agility.die.sides": originalActor._source.system.attributes.agility.die.sides - 4,
-            "system.attributes.strength.die.sides": originalActor._source.system.attributes.strength.die.sides - 4,
-            "system.attributes.vigor.die.sides": originalActor._source.system.attributes.vigor.die.sides - 4,
             "system.details.autoCalcToughness": true //In the off chance this was disabled, we need to enable it so the human form is correct
         };
+
+        //Werewolves increase agility, strength and vigor by 2 die types so we need to remove that
+        //manually if the actor isn't using the Ferocity ability
+        if (!hasFerocity) {
+            actorUpdateData["system.attributes.agility.die.sides"] = originalActor._source.system.attributes.agility.die.sides - 4;
+            actorUpdateData["system.attributes.strength.die.sides"] = originalActor._source.system.attributes.strength.die.sides - 4;
+            actorUpdateData["system.attributes.vigor.die.sides"] = originalActor._source.system.attributes.vigor.die.sides - 4;
+        }
 
         await createdActor.update(actorUpdateData);
 
