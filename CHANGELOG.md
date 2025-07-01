@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.0.2
+
+* Fixed an error when not using SUCC
+
+## 1.0.1
+
+* Small bug fix
+
+## 1.0.0
+
+* v13 update
+
 ## 0.5.1
 
 * Fixed an error when not using SUCC

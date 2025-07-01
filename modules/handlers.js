@@ -15,7 +15,7 @@ export class Handlers {
      */
     static async onReady() {
         if (!game.user.isGM) return;
-        
+
         if (!game.modules.get("tcal")?.active) {
             if (!Utils.getSetting(SSC_CONFIG.SETTING_KEYS.ignoreTcalWarning)) {
                 foundry.applications.api.DialogV2.wait({
@@ -68,14 +68,14 @@ export class Handlers {
 
             //Local function for handling actors being dropped on the shape change item sheet
             async function onDrop(event) {
-                const data = TextEditor.getDragEventData(event);
+                const data = foundry.applications.ux.TextEditor.implementation.getDragEventData(event);
                 if (data.type == "Actor") {
                     Handlers.addActorToShapeChangePower(data, this);
                 }
             }
 
             //Add the drop binding to the item sheet
-            const dragDrop = new DragDrop({
+            const dragDrop = new foundry.applications.ux.DragDrop.implementation({
                 dragSelector: null,
                 dropSelector: null,
                 callbacks: {
@@ -110,7 +110,7 @@ export class Handlers {
         shapeData.sort((a, b) => a.name.localeCompare(b.name));
 
         const templateData = { shapes: shapeData, isOwner: power.isOwner };
-        const content = await renderTemplate(SSC_CONFIG.DEFAULT_CONFIG.templates.shapesTab, templateData);
+        const content = await foundry.applications.handlebars.renderTemplate(SSC_CONFIG.DEFAULT_CONFIG.templates.shapesTab, templateData);
 
         $('.tabs', html).append($('<a>').addClass("item").attr("data-tab", "shapes").html(game.i18n.localize('SSC.ShapesTab.Tab')));
         $('<section>').addClass("tab shapes").attr('data-tab', 'shapes').html(content).insertAfter($('.tab:last', html));
@@ -196,7 +196,7 @@ export class Handlers {
         let humanTokenImg = ability.getFlag(SSC_CONFIG.NAME, SSC_CONFIG.FLAGS.humanTokenImg) ?? "";
         let humanTokenScale = ability.getFlag(SSC_CONFIG.NAME, SSC_CONFIG.FLAGS.humanTokenScale) ?? "";
         const templateData = { humanTokenImg: humanTokenImg, humanTokenScale: humanTokenScale, isOwner: ability.isOwner };
-        const content = await renderTemplate(SSC_CONFIG.DEFAULT_CONFIG.templates.humanTab, templateData);
+        const content = await foundry.applications.handlebars.renderTemplate(SSC_CONFIG.DEFAULT_CONFIG.templates.humanTab, templateData);
 
         $('.tabs', html).append($('<a>').addClass("item").attr("data-tab", "human").html(game.i18n.localize('SSC.HumanTab.Tab')));
         $('<section>').addClass("tab human").attr('data-tab', 'human').html(content).insertAfter($('.tab:last', html));
@@ -208,7 +208,7 @@ export class Handlers {
             app.render(true);
         });
 
-        html.find("input[name=scale").on("change", async event => {
+        html.find("range-picker[name=scale").on("change", async event => {
             await ability.setFlag(SSC_CONFIG.NAME, SSC_CONFIG.FLAGS.humanTokenScale, event.target.value);
             app.render(true);
         });
