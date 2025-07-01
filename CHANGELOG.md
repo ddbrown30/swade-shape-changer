@@ -3,6 +3,7 @@
 ## 1.1.0
 
 * Several fixes to werewolf transformation (By DC23)
+* Fixed the default change anim setting
   
 ## 1.0.2
 
