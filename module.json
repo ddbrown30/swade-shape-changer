@@ -4,7 +4,7 @@
   "description": "<p>A module that helps to automate the shape change power.</p>",
   "compatibility": {
     "minimum": "13",
-    "verified": "13.346"
+    "verified": "13.347"
   },
   "packs": [
     {
