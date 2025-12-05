@@ -123,7 +123,7 @@ export class ShapeChanger {
             "system.powerPoints": originalActor.system.powerPoints,
             "system.details.autoCalcToughness": true,
             "system.details.autoCalcParry": true,
-            "system.wildcard": originalActor.wildcard,
+            "system.wildcard": originalActor.system.wildcard,
         };
 
         if (animalSmarts) {
@@ -377,7 +377,7 @@ export class ShapeChanger {
 
         //Disable the Heat Seeing and Heat Sensing vision modes on the human form token
         const WEREWOLF_SIGHT_MODES = ["seeHeat", "senseHeat"]
-        const humanDetectionModes = createdTokenDoc.detectionModes.map(mode => 
+        const humanDetectionModes = createdTokenDoc.detectionModes.map(mode =>
             WEREWOLF_SIGHT_MODES.includes(mode.id) ? { ...mode, enabled: false } : mode
         ).filter(m => m.range != "Infinity" && m.range != 0);
         await canvas.scene.updateEmbeddedDocuments("Token", [{
