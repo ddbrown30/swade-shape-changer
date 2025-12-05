@@ -109,6 +109,12 @@ export class ShapeChanger {
         let effectsToAdd = originalActor.effects.filter(effect => effect.isTemporary);
         await createdActor.createEmbeddedDocuments("ActiveEffect", effectsToAdd, { render: false });
 
+        let sheetClass = originalActor.flags?.core?.sheetClass ?? "";
+        if (!sheetClass) {
+            const defaults = DocumentSheetConfig.getSheetClassesForSubType("Actor", originalActor.type);
+            sheetClass = defaults.defaultClass;
+        }
+
         //The created actor keeps their smarts, spirit, and wounds
         let actorUpdateData = {
             name: originalActor.name,
@@ -124,6 +130,7 @@ export class ShapeChanger {
             "system.details.autoCalcToughness": true,
             "system.details.autoCalcParry": true,
             "system.wildcard": originalActor.system.wildcard,
+            "flags.core.sheetClass": sheetClass,
         };
 
         if (animalSmarts) {
