@@ -1,10 +1,15 @@
 # Changelog
 
+## 1.2.0
+
+* Fixed the wildcard state not being copied over to the new actor
+* We now use the same sheet class on the new actor when possible
+
 ## 1.1.0
 
 * Several fixes to werewolf transformation (By DC23)
 * Fixed the default change anim setting
-  
+
 ## 1.0.2
 
 * Fixed an error when not using SUCC
