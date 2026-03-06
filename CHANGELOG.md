@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.3.0
+
+* Updated to swade 5.2
+
 ## 1.2.0
 
 * Fixed the wildcard state not being copied over to the new actor
