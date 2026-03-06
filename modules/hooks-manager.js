@@ -23,6 +23,9 @@ export class HooksManager {
 
             Utils.loadTemplates();
             registerSettings();
+
+            Handlers.addShapesTab();
+            Handlers.addHumanTab();
         });
 
         Hooks.once("socketlib.ready", () => {
@@ -46,11 +49,11 @@ export class HooksManager {
         /* -------------------------------------------- */
         /*                    Item                    */
         /* -------------------------------------------- */
-        Hooks.on("preUpdateItem", ((app, html, data) => {
-            Handlers.onPreUpdateItem(app, html, data);
+        Hooks.on("preUpdateItem", ((item, changes, options, user) => {
+            Handlers.onPreUpdateItem(item, changes, options, user);
         }))
 
-        Hooks.on("renderItemSheet", (app, html, data) => {
+        Hooks.on("renderSwadeItemSheetV2", (app, html, data) => {
             if (ShapeChanger.AddingItems){
                 //Hack to close all the item sheets that pop up during a shape change
                 app.close({force:true});

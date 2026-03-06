@@ -71,7 +71,7 @@
 }
 
 .ssc .human-img {
-  width: 300px;
+  width: 250px;
   border: none;
 }
 
@@ -83,4 +83,18 @@
 
 .ssc .select-section {
   padding-bottom: 10px;
+}
+
+.ssc .flexrow {
+  align-items: unset;
+  margin-top: 1px;
+  margin-bottom: 1px;
+}
+
+.ssc button.file-picker {
+  max-width: fit-content;
+}
+
+.ssc .token-img {
+  font-weight: bold;
 }

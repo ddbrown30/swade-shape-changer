@@ -348,7 +348,8 @@ export class ShapeChanger {
      * @param {String} originalTokenId //The token being transformed
      */
     static async werewolfToHuman(sceneId, originalTokenId) {
-        let originalTokenDoc = game.scenes.find(s => s.id == sceneId).tokens.find(t => t.id == originalTokenId);
+        const scene = game.scenes.find(s => s.id == sceneId);
+        let originalTokenDoc = scene.tokens.find(t => t.id == originalTokenId);
         const originalActor = originalTokenDoc.actor;
         const actorToCreate = await fromUuid(originalTokenDoc.actor.uuid);
 
@@ -375,6 +376,8 @@ export class ShapeChanger {
             "texture.scaleX": humanTokenScale,
             "texture.scaleY": humanTokenScale,
         });
+
+        await ShapeChanger.playSequencerAnimation(scene, originalTokenDoc, newTokenDoc);
 
         //Mark the token as a change source so that we warn the user if they try to delete it
         await originalTokenDoc.setFlag(SSC_CONFIG.NAME, SSC_CONFIG.FLAGS.isChangeSource, true);

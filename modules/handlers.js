@@ -44,15 +44,15 @@ export class Handlers {
      * @param {*} html
      * @param {*} data
      */
-    static async onPreUpdateItem(app, html, data) {
-        if (Utils.isShapeChangePower(app)) {
+    static async onPreUpdateItem(item, changes, options, user) {
+        if (Utils.isShapeChangePower(item)) {
             //If we're making a change to the shape change power, we need to save the current tab so that it doesn't accidentally switch during the render
             Handlers.openTab = true;
-            Handlers.activeTab = app._sheet._tabs?.[0]?.active;
-        } else if (Utils.isTransformationAbility(app)) {
+            Handlers.activeTab = item.sheet.tabGroups["main"];
+        } else if (Utils.isTransformationAbility(item)) {
             //If we're making a change to the transformation ability, we need to save the current tab so that it doesn't accidentally switch during the render
             Handlers.openTab = true;
-            Handlers.activeTab = app._sheet._tabs?.[0]?.active;
+            Handlers.activeTab = item.sheet.tabGroups["main"];
         }
     }
 
@@ -63,7 +63,7 @@ export class Handlers {
      * @param {*} data
      */
     static async onRenderItemSheet(app, html, data) {
-        let item = app.object;
+        let item = app.item;
         if (Utils.isShapeChangePower(item)) {
 
             //Local function for handling actors being dropped on the shape change item sheet
@@ -84,10 +84,34 @@ export class Handlers {
             });
             dragDrop.bind(app.form);
 
-            Handlers.addTabToShapeChangeSheet(html, item);
+            Handlers.addTabToShapeChangeSheet(app, html, item);
         } else if (Utils.isTransformationAbility(item)) {
             Handlers.addTabToTransformationAbility(app, html, item);
         }
+    }
+
+    static addShapesTab() {
+        const shapesTab = {
+            id: 'shapes',
+            group: 'main',
+            label: "SSC.ShapesTab.Tab",
+            cssClass: 'item',
+            tabCssClass: 'shapes',
+        };
+
+        swade.sheets.SwadeItemSheetV2.TABS.push(shapesTab);
+    }
+
+    static addHumanTab() {
+        const humanTab = {
+            id: 'human',
+            group: 'main',
+            label: "SSC.HumanTab.Tab",
+            cssClass: 'item',
+            tabCssClass: 'human',
+        };
+
+        swade.sheets.SwadeItemSheetV2.TABS.push(humanTab);
     }
 
     /**
@@ -95,9 +119,10 @@ export class Handlers {
      * @param {*} html
      * @param {Item} power //The shape change power item
      */
-    static async addTabToShapeChangeSheet(html, power) {
+    static async addTabToShapeChangeSheet(app, html, power) {
         let shapes = power.getFlag(SSC_CONFIG.NAME, SSC_CONFIG.FLAGS.shapes) ?? [];
         let shapeData = [];
+
         for (let shape of shapes) {
             const shapeActor = await fromUuid(shape);
             shapeData.push({
@@ -112,32 +137,51 @@ export class Handlers {
         const templateData = { shapes: shapeData, isOwner: power.isOwner };
         const content = await foundry.applications.handlebars.renderTemplate(SSC_CONFIG.DEFAULT_CONFIG.templates.shapesTab, templateData);
 
-        $('.tabs', html).append($('<a>').addClass("item").attr("data-tab", "shapes").html(game.i18n.localize('SSC.ShapesTab.Tab')));
-        $('<section>').addClass("tab shapes").attr('data-tab', 'shapes').html(content).insertAfter($('.tab:last', html));
+        //Add tab button
+        const tabs = html.querySelector('.tabs');
+        const tabButton = document.createElement('a');
+        tabButton.classList.add("item");
+        tabButton.dataset.action = "tab";
+        tabButton.dataset.tab = "shapes";
+        tabButton.dataset.group = "main";
+        tabButton.innerHTML = game.i18n.localize('SSC.ShapesTab.Tab');
+        tabs.appendChild(tabButton);
 
-        //Event handler for the actor
-        html.find("input.actor-button").click(ev => {
-            let shapes = power.getFlag(SSC_CONFIG.NAME, SSC_CONFIG.FLAGS.shapes);
-            let shape = shapes.find(e => e == ev.currentTarget.dataset.shapeId);
-            const shapeActor = fromUuidSync(shape);
-            if (shapeActor) {
-                shapeActor.sheet._canUserView = function () { return true; };
-                shapeActor.sheet.render(true);
-            }
+        //Add tab section
+        const section = document.createElement('section');
+        section.classList.add("tab", "shapes", "scrollable");
+        section.dataset.tab = "shapes";
+        section.dataset.group = "main";
+        section.innerHTML = content;
+
+        const lastTab = html.querySelector('.tab:last-of-type');
+        lastTab?.after(section);
+
+        //Event handler for actor buttons
+        html.querySelectorAll("input.actor-button").forEach(el => {
+            el.addEventListener("click", ev => {
+                let shapes = power.getFlag(SSC_CONFIG.NAME, SSC_CONFIG.FLAGS.shapes);
+                let shape = shapes.find(e => e == ev.currentTarget.dataset.shapeId);
+
+                const shapeActor = fromUuidSync(shape);
+                if (shapeActor) {
+                    shapeActor.sheet._canUserView = function () { return true; };
+                    shapeActor.sheet.render(true);
+                }
+            });
         });
 
-        //Event handler for the delete buttons
-        html.find("[class='shape-delete']").click(ev => {
-            let shapes = power.getFlag(SSC_CONFIG.NAME, SSC_CONFIG.FLAGS.shapes);
-            shapes = shapes.filter(e => e !== ev.currentTarget.dataset.shapeId);
-            power.setFlag(SSC_CONFIG.NAME, SSC_CONFIG.FLAGS.shapes, shapes);
+        //Event handler for delete buttons
+        html.querySelectorAll(".shape-delete").forEach(el => {
+            el.addEventListener("click", ev => {
+                let shapes = power.getFlag(SSC_CONFIG.NAME, SSC_CONFIG.FLAGS.shapes);
+                shapes = shapes.filter(e => e !== ev.currentTarget.dataset.shapeId);
+                power.setFlag(SSC_CONFIG.NAME, SSC_CONFIG.FLAGS.shapes, shapes);
+            });
         });
 
         //This hack ensures the correct tab stays open when the sheet renders
-        if (Handlers.openTab) {
-            power.sheet._tabs?.[0]?.activate?.(Handlers.activeTab);
-            Handlers.openTab = false;
-        }
+            app.changeTab(app.tabGroups["main"], "main", { force: true });
     }
 
     /**
@@ -195,29 +239,51 @@ export class Handlers {
     static async addTabToTransformationAbility(app, html, ability) {
         let humanTokenImg = ability.getFlag(SSC_CONFIG.NAME, SSC_CONFIG.FLAGS.humanTokenImg) ?? "";
         let humanTokenScale = ability.getFlag(SSC_CONFIG.NAME, SSC_CONFIG.FLAGS.humanTokenScale) ?? "";
+
         const templateData = { humanTokenImg: humanTokenImg, humanTokenScale: humanTokenScale, isOwner: ability.isOwner };
         const content = await foundry.applications.handlebars.renderTemplate(SSC_CONFIG.DEFAULT_CONFIG.templates.humanTab, templateData);
 
-        $('.tabs', html).append($('<a>').addClass("item").attr("data-tab", "human").html(game.i18n.localize('SSC.HumanTab.Tab')));
-        $('<section>').addClass("tab human").attr('data-tab', 'human').html(content).insertAfter($('.tab:last', html));
+        //Add tab button
+        const tabs = html.querySelector(".tabs");
+        const tabButton = document.createElement("a");
+        tabButton.classList.add("item");
+        tabButton.dataset.action = "tab";
+        tabButton.dataset.tab = "human";
+        tabButton.dataset.group = "main";
+        tabButton.innerHTML = game.i18n.localize("SSC.HumanTab.Tab");
+        tabs.appendChild(tabButton);
 
-        html.find("button.file-picker").click(Handlers.activateFilePicker.bind(app));
+        //Add tab section
+        const section = document.createElement("section");
+        section.classList.add("tab", "human", "scrollable");
+        section.dataset.tab = "human";
+        section.dataset.group = "main";
+        section.innerHTML = content;
 
-        html.find("input[name=human-img-path").on("change", async event => {
-            await ability.setFlag(SSC_CONFIG.NAME, SSC_CONFIG.FLAGS.humanTokenImg, event.target.value);
-            app.render(true);
+        const lastTab = html.querySelector(".tab:last-of-type");
+        lastTab?.after(section);
+
+        //File picker button
+        html.querySelectorAll("button.file-picker").forEach(el => {
+            el.addEventListener("click", Handlers.activateFilePicker.bind(app));
         });
 
-        html.find("range-picker[name=scale").on("change", async event => {
-            await ability.setFlag(SSC_CONFIG.NAME, SSC_CONFIG.FLAGS.humanTokenScale, event.target.value);
-            app.render(true);
+        //Image path change
+        html.querySelectorAll("input[name='human-img-path']").forEach(el => {
+            el.addEventListener("change", async event => {
+                await ability.setFlag(SSC_CONFIG.NAME, SSC_CONFIG.FLAGS.humanTokenImg, event.target.value);
+            });
+        });
+
+        //Scale change
+        html.querySelectorAll("range-picker[name='scale']").forEach(el => {
+            el.addEventListener("change", async event => {
+                await ability.setFlag(SSC_CONFIG.NAME, SSC_CONFIG.FLAGS.humanTokenScale, event.target.value);
+            });
         });
 
         //This hack ensures the correct tab stays open when the sheet renders
-        if (Handlers.openTab) {
-            ability.sheet._tabs?.[0]?.activate?.(Handlers.activeTab);
-            Handlers.openTab = false;
-        }
+            app.changeTab(app.tabGroups["main"], "main", { force: true });
     }
 
     static activateFilePicker(event) {
