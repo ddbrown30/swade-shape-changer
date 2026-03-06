@@ -3,6 +3,7 @@
 ## 1.3.0
 
 * Updated to swade 5.2
+* Werewolf to human now plays an anim
 
 ## 1.2.0
 
