@@ -6,6 +6,8 @@ For the shape change power, it handles creating and swapping to a new token and 
 
 For werewolves from the Horror Companion, it handles transforming your werewolf into a human by swapping the token art and removing all the werewolf abilities, edges, and the silvered weapons weakness.
 
+There is also a stripped down version if you just want to swap to a different actor minimal transfer.
+
 For more detailed instructions for each type of transformation, see the wiki.
 
 ## Feedback
