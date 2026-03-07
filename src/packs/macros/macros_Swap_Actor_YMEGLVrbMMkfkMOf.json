@@ -1,0 +1,28 @@
+{
+  "name": "Swap Actor",
+  "type": "script",
+  "command": "game.swadeShapeChanger.swapActor(token);",
+  "img": "icons/magic\\control\\energy-stream-link-teal.webp",
+  "author": "26zedh1nuCLjFH0V",
+  "scope": "global",
+  "folder": null,
+  "ownership": {
+    "default": 0,
+    "26zedh1nuCLjFH0V": 3
+  },
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "13.351",
+    "systemId": "swade",
+    "systemVersion": "5.2.0",
+    "createdTime": 1772921551179,
+    "modifiedTime": 1772921551179,
+    "lastModifiedBy": "26zedh1nuCLjFH0V"
+  },
+  "_id": "YMEGLVrbMMkfkMOf",
+  "sort": 0,
+  "_key": "!macros!YMEGLVrbMMkfkMOf"
+}
