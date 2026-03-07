@@ -12,6 +12,7 @@ export const DEFAULT_CONFIG = {
         shapesTab: `${PATH}/templates/shapes-tab.hbs`,
         humanTab: `${PATH}/templates/human-tab.hbs`,
         changeShapeDialog: `${PATH}/templates/change-shape-dialog.hbs`,
+        swapActorDialog: `${PATH}/templates/swap-actor-dialog.hbs`,
     },
     changeTypes: {
         base: "SSC.ChangeShapeDialog.ShapeChangeTypes.Base",

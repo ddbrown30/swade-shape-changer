@@ -1,5 +1,6 @@
 import { ChangeShapeDialog } from "./change-shape-dialog.js";
 import * as SSC_CONFIG from "./ssc-config.js";
+import { SwapActorDialog } from "./swap-actor-dialog.js";
 import { Utils } from "./utils.js";
 
 /**
@@ -98,5 +99,24 @@ export class ShapeChangerAPI {
             },
             defaultYes: true
         });
+    }
+
+
+    /**
+     * Opens the dialog for executing an actor swap
+     * @param {Token} sourceToken //The token that is the source of the shape change
+     */
+    static async swapActor(sourceToken) {
+        if (!game.user.isTrusted) {
+            Utils.showNotification("error", game.i18n.localize("SSC.Errors.NotTrusted"));
+            return;
+        }
+
+        if (!sourceToken) {
+            Utils.showNotification("error", game.i18n.localize("SSC.Errors.NoTokenSelected"));
+            return;
+        }
+
+        new SwapActorDialog({ document: sourceToken.document }).render(true);
     }
 }

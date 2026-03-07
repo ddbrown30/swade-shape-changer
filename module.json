@@ -91,10 +91,7 @@
   ],
   "flags": {
     "hotReload": {
-      "extensions": [
-        "css",
-        "hbs"
-      ]
+      "extensions": ["css", "hbs"]
     }
   },
   "socket": true,

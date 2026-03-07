@@ -20,6 +20,7 @@ export class HooksManager {
             game.swadeShapeChanger.changeShape = ShapeChangerAPI.changeShape;
             game.swadeShapeChanger.revertShape = ShapeChangerAPI.revertShape;
             game.swadeShapeChanger.werewolfToHuman = ShapeChangerAPI.werewolfToHuman;
+            game.swadeShapeChanger.swapActor = ShapeChangerAPI.swapActor;
 
             Utils.loadTemplates();
             registerSettings();
@@ -36,6 +37,7 @@ export class HooksManager {
             game.swadeShapeChanger.socket.register("changeTokenIntoActor", ShapeChanger.changeTokenIntoActor);
             game.swadeShapeChanger.socket.register("revertChangeForToken", ShapeChanger.revertChangeForToken);
             game.swadeShapeChanger.socket.register("werewolfToHuman", ShapeChanger.werewolfToHuman);
+            game.swadeShapeChanger.socket.register("swapTokenToActor", ShapeChanger.swapTokenToActor);
         });
 
         Hooks.once("succReady", () => {

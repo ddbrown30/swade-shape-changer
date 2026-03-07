@@ -1,0 +1,27 @@
+<div class='ssc'>
+    <form id="swap-actor-form">
+        {{#if targets.length }}
+        <div class="select-section">
+            <label for="target">{{{localize "SSC.SwapActorDialog.TargetSelectionLabel"}}}</label>
+            <select name="target" class="shape" title="">
+                {{selectOptions targets selected=target localize=true valueAttr="name" labelAttr="label"}}
+            </select>
+            <br>
+        </div>
+        {{/if}}
+
+        <div class="select-section">
+            <label>{{{localize "SSC.SwapActorDialog.ActorSelectionLabel"}}}</label>
+            <div class="shape-row">
+                <input class="selected-actor" placeholder="{{placeholderText}}" value="{{selectedActorText}}" disabled></input>
+                {{#if actorBrowser}}
+                <a class="open-actor-browser-button" aria-label="{{{localize "ACTOR_BROWSER.OpenActorBrowser"}}}" role="button" data-tooltip="ACTOR_BROWSER.OpenActorBrowser"><i class="fas fa-folder-user fa-lg"></i></a>
+                {{/if}}
+            </div>
+        </div>
+    </form>
+    <footer class="form-footer">
+        <button type="button" form="swap-actor-form" data-action="confirm" {{#unless hasSelectedActor}}disabled{{/unless}}>{{localize "SSC.SwapActorDialog.ConfirmButtonName"}}</button>
+        <button type="button" form="swap-actor-form" data-action="cancel">{{localize "SSC.SwapActorDialog.CancelButtonName"}}</button>
+    </footer>
+</div>

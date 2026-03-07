@@ -36,6 +36,24 @@
                 "Body": "The max Fatigue value on the original token does not match the max Fatigue value on the new token. Please open the new token and adjust the max Fatigue manually.<p>I'd also appreciate if you would open an issue on GitHub describing how this happened.<br>"
             }
         },
+        "SwapActorDialog": {
+            "Title": "Swap Actor Options",
+            "ActorSelectionLabel": "Target Actor",
+            "DragActor": "Drag+Drop Actor",
+            "DragActorWithActorBrowser": "Drag+Drop or Browse Actor",
+            "TargetSelectionLabel": "Target Token",
+            "TargetSelectionAll": "All Targets",
+            "ConfirmButtonName": "Confirm",
+            "CancelButtonName": "Cancel",
+            "MaxWoundNotification": {
+                "Title": "Max Wound Mismatch",
+                "Body": "The max Wounds value on the original token does not match the max Wounds value on the new token. Please open the new token and adjust the max Wounds manually.<p>I'd also appreciate if you would open an issue on GitHub describing how this happened.<br>"
+            },
+            "MaxFatigueNotification": {
+                "Title": "Max Fatigue Mismatch",
+                "Body": "The max Fatigue value on the original token does not match the max Fatigue value on the new token. Please open the new token and adjust the max Fatigue manually.<p>I'd also appreciate if you would open an issue on GitHub describing how this happened.<br>"
+            }
+        },
         "WerewolfToHumanDialog": {
             "Title": "Tranform Into Human",
             "Body": "Change this token into its human form?"

@@ -27,6 +27,9 @@ export class ShapeChanger {
             name: originalTokenDoc.name,
             displayName: originalTokenDoc.displayName,
             "sight.enabled": originalTokenDoc.sight.enabled,
+            "bar1.attribute": originalTokenDoc.bar1.attribute,
+            "bar2.attribute": originalTokenDoc.bar2.attribute,
+            displayBars: originalTokenDoc.displayBars,
             "delta.ownership": originalTokenDoc.actor.ownership, //We want to make sure that the owners of the original token own the new one too
             actorLink: false, //We always want to unlink the actor so that we don't modify the original
         });
@@ -370,6 +373,9 @@ export class ShapeChanger {
             x: originalTokenDoc.x,
             y: originalTokenDoc.y,
             "sight.enabled": originalTokenDoc.sight.enabled,
+            "bar1.attribute": originalTokenDoc.bar1.attribute,
+            "bar2.attribute": originalTokenDoc.bar2.attribute,
+            displayBars: originalTokenDoc.displayBars,
             "sight.visionMode": "basic", //Humans only have basic vision. This allows the werewolf token to have infravision enabled
             actorLink: false, //We always want to unlink the actor so that we don't modify the original
             "texture.src": humanTokenImg,
@@ -469,6 +475,96 @@ export class ShapeChanger {
             actorUpdateData["system.attributes.strength.die.sides"] = originalActor._source.system.attributes.strength.die.sides - 4;
             actorUpdateData["system.attributes.vigor.die.sides"] = originalActor._source.system.attributes.vigor.die.sides - 4;
         }
+
+        await createdActor.update(actorUpdateData);
+
+        //Record our original token so we can use it to revert later
+        await createdTokenDoc.setFlag(SSC_CONFIG.NAME, SSC_CONFIG.FLAGS.originalToken, originalTokenDoc.id);
+
+        //The new token takes the place of the old in the combat tracker
+        await ShapeChanger.swapTokensInCombat(originalTokenDoc, createdTokenDoc);
+
+        return createdTokenDoc;
+    }
+
+    /**
+     * Creates a new token based on an actor and configures it following the rules for the shape change power
+     * @param {String} sceneId //The token being transformed
+     * @param {String} originalTokenId //The token being transformed
+     * @param {String} actorToCreateId //The actor to copy
+     */
+    static async swapTokenToActor(sceneId, originalTokenId, actorToCreateId) {
+        const scene = game.scenes.find(s => s.id == sceneId);
+        let originalTokenDoc = scene.tokens.find(t => t.id == originalTokenId);
+        const originalActor = originalTokenDoc.actor;
+        const actorToCreate = actorToCreateId.startsWith("Compendium") ? await game.tcal.importTransientActor(actorToCreateId) : await fromUuid(actorToCreateId);
+
+        const newTokenDoc = await actorToCreate.getTokenDocument({
+            x: originalTokenDoc.x,
+            y: originalTokenDoc.y,
+            disposition: originalTokenDoc.disposition,
+            name: originalTokenDoc.name,
+            displayName: originalTokenDoc.displayName,
+            "sight.enabled": originalTokenDoc.sight.enabled,
+            "bar1.attribute": originalTokenDoc.bar1.attribute,
+            "bar2.attribute": originalTokenDoc.bar2.attribute,
+            displayBars: originalTokenDoc.displayBars,
+            "delta.ownership": originalTokenDoc.actor.ownership, //We want to make sure that the owners of the original token own the new one too
+            actorLink: false, //We always want to unlink the actor so that we don't modify the original
+        });
+
+        newTokenDoc.actor.type = originalTokenDoc.actor.type;
+
+        await ShapeChanger.playSequencerAnimation(scene, originalTokenDoc, newTokenDoc);
+
+        //Mark the token as a shape change source so that we warn the user if they try to delete it
+        await originalTokenDoc.setFlag(SSC_CONFIG.NAME, SSC_CONFIG.FLAGS.isChangeSource, true);
+
+        //Hide the original token and move it to the side
+        await canvas.scene.updateEmbeddedDocuments("Token", [{
+            _id: originalTokenDoc.id,
+            x: newTokenDoc.x - (canvas.grid.sizeX * originalTokenDoc.width * originalTokenDoc.texture.scaleX),
+            y: newTokenDoc.y - (canvas.grid.sizeY * originalTokenDoc.height * originalTokenDoc.texture.scaleY),
+            "hidden": true
+        }], { animate: false });
+
+        let createdTokenDoc = (await canvas.scene.createEmbeddedDocuments("Token", [newTokenDoc.toObject()]))[0];
+        let createdActor = createdTokenDoc.actor;
+
+        //We've removed everything we're going to remove from the new actor so check if we still have any AEs that modify unsupported values and remove them
+        let effects = createdActor.appliedEffects.filter(ae => ae.changes.find(c => Utils.shouldDeleteKey(c.key)));
+        for (let effect of effects) {
+            effect.changes = effect.changes.filter(c => !Utils.shouldDeleteKey(c.key));
+            if (effect.changes.length == 0) {
+                await effect.delete();
+            } else {
+                await effect.update({ _id: undefined, ...effect });
+            }
+        }
+
+        //Copy over any temporary effects
+        //We're not copying permanent effects as there is a high chance that we don't want them. If someone wants them, they can drag them over manually
+        let effectsToAdd = originalActor.effects.filter(effect => effect.isTemporary);
+        await createdActor.createEmbeddedDocuments("ActiveEffect", effectsToAdd, { render: false });
+
+        let sheetClass = originalActor.flags?.core?.sheetClass ?? "";
+        if (!sheetClass) {
+            const defaults = DocumentSheetConfig.getSheetClassesForSubType("Actor", originalActor.type);
+            sheetClass = defaults.defaultClass;
+        }
+
+        //The created actor keeps state values and nothing else
+        let actorUpdateData = {
+            name: originalActor.name,
+            "system.bennies.value": originalActor.system.bennies.value,
+            "system.wounds.value": Math.min(originalActor.system.wounds.value, createdActor.system.wounds.max),
+            "system.fatigue.value": Math.min(originalActor.system.fatigue.value, createdActor.system.fatigue.max),
+            "system.powerPoints": originalActor.system.powerPoints,
+            "system.details.autoCalcToughness": true,
+            "system.details.autoCalcParry": true,
+            "system.wildcard": originalActor.system.wildcard,
+            "flags.core.sheetClass": sheetClass,
+        };
 
         await createdActor.update(actorUpdateData);
 

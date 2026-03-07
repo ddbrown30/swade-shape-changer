@@ -98,3 +98,24 @@
 .ssc .token-img {
   font-weight: bold;
 }
+
+.swap-actor-dialog footer.form-footer {
+  display: flex;
+  gap: 0.5rem;
+  padding-top: 10px;
+}
+
+.swap-actor-dialog footer.form-footer button {
+  min-width: fit-content;
+}
+
+.swap-actor-dialog .selected-actor {
+  color: var(--input-text-color);
+  background-color: var(--input-background-color);
+  border-color: var(--input-border-color);
+  flex: auto;
+}
+
+.swap-actor-dialog .selected-actor::placeholder {
+  font-style: italic;
+}
