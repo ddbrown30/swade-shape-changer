@@ -90,30 +90,6 @@ export class Handlers {
         }
     }
 
-    static addShapesTab() {
-        const shapesTab = {
-            id: 'shapes',
-            group: 'main',
-            label: "SSC.ShapesTab.Tab",
-            cssClass: 'item',
-            tabCssClass: 'shapes',
-        };
-
-        swade.sheets.SwadeItemSheetV2.TABS.push(shapesTab);
-    }
-
-    static addHumanTab() {
-        const humanTab = {
-            id: 'human',
-            group: 'main',
-            label: "SSC.HumanTab.Tab",
-            cssClass: 'item',
-            tabCssClass: 'human',
-        };
-
-        swade.sheets.SwadeItemSheetV2.TABS.push(humanTab);
-    }
-
     /**
      * Adds a new tab to the shape change power sheet that displays our list of shapes
      * @param {*} html
