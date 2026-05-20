@@ -157,7 +157,7 @@ export class Handlers {
         });
 
         //This hack ensures the correct tab stays open when the sheet renders
-            app.changeTab(app.tabGroups["main"], "main", { force: true });
+        app.changeTab(app.tabGroups["main"], "main", { force: true });
     }
 
     /**
@@ -259,7 +259,7 @@ export class Handlers {
         });
 
         //This hack ensures the correct tab stays open when the sheet renders
-            app.changeTab(app.tabGroups["main"], "main", { force: true });
+        app.changeTab(app.tabGroups["main"], "main", { force: true });
     }
 
     static activateFilePicker(event) {
