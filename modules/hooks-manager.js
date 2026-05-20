@@ -24,9 +24,6 @@ export class HooksManager {
 
             Utils.loadTemplates();
             registerSettings();
-
-            Handlers.addShapesTab();
-            Handlers.addHumanTab();
         });
 
         Hooks.once("socketlib.ready", () => {
