@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.4.1
+
+* Updated version info to officially support v14
+* Minor code cleanup
+
 ## 1.4.0
 
 * Added a new type of transformation called Swap Actor. This is a stripped down transformation that only copies state values such as wounds, bennies, and power points.
