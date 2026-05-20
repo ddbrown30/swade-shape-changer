@@ -114,7 +114,7 @@ export class ShapeChanger {
 
         let sheetClass = originalActor.flags?.core?.sheetClass ?? "";
         if (!sheetClass) {
-            const defaults = DocumentSheetConfig.getSheetClassesForSubType("Actor", originalActor.type);
+            const defaults = foundry.applications.apps.DocumentSheetConfig.getSheetClassesForSubType("Actor", originalActor.type);
             sheetClass = defaults.defaultClass;
         }
 
@@ -549,7 +549,7 @@ export class ShapeChanger {
 
         let sheetClass = originalActor.flags?.core?.sheetClass ?? "";
         if (!sheetClass) {
-            const defaults = DocumentSheetConfig.getSheetClassesForSubType("Actor", originalActor.type);
+            const defaults = foundry.applications.apps.DocumentSheetConfig.getSheetClassesForSubType("Actor", originalActor.type);
             sheetClass = defaults.defaultClass;
         }
 
