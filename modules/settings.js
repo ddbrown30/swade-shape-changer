@@ -1,5 +1,4 @@
 import * as SSC_CONFIG from "./ssc-config.js";
-import { ShapeChanger } from "./shape-changer.js";
 import { Utils } from "./utils.js";
 
 export function registerSettings() {
@@ -12,7 +11,7 @@ export function registerSettings() {
             type: Boolean,
             config: true,
             default: true,
-            onChange: s => { Utils.validateSUCCConfig(); }
+            onChange: () => { Utils.validateSUCCConfig(); }
         });
     }
 
