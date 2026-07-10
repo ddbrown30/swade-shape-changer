@@ -15,9 +15,9 @@ export class ChangeShapeDialog extends HandlebarsApplicationMixin(DocumentSheetV
         classes: ["change-shape-dialog"],
         window: { title: "SSC.ChangeShapeDialog.Title" },
         actions: {
-            success: function (event, button) { ChangeShapeDialog.handleChangeDialogConfirm(this, false); },
-            raise: function (event, button) { ChangeShapeDialog.handleChangeDialogConfirm(this, true); },
-            cancel: function (event, button) { this.close(); }
+            success: function () { ChangeShapeDialog.handleChangeDialogConfirm(this, false); },
+            raise: function () { ChangeShapeDialog.handleChangeDialogConfirm(this, true); },
+            cancel: function () { this.close(); }
         },
     };
 
@@ -28,7 +28,7 @@ export class ChangeShapeDialog extends HandlebarsApplicationMixin(DocumentSheetV
     };
 
     async _prepareContext(_options) {
-        let sourceToken = this.document.object;
+        const sourceToken = this.document.object;
 
         this.shapeNames = [];
 
@@ -71,19 +71,15 @@ export class ChangeShapeDialog extends HandlebarsApplicationMixin(DocumentSheetV
             useSUCC: Utils.useSUCC(),
             actorBrowser: !!game.actorBrowser
         };
-    };
+    }
 
     async getShapesFromPowers(sourceToken) {
-        let shapePowers = sourceToken.actor.items.filter((item) => Utils.isShapeChangePower(item));
-        if (!shapePowers) {
+        const shapePowers = sourceToken.actor.items.filter((item) => Utils.isShapeChangePower(item));
+        if (!shapePowers.length) {
             return;
         }
 
-        let shapes = [];
-        for (let shapePower of shapePowers) {
-            shapes = shapes.concat(shapePower.getFlag(SSC_CONFIG.NAME, SSC_CONFIG.FLAGS.shapes) ?? []);
-        }
-
+        let shapes = shapePowers.flatMap(shapePower => shapePower.getFlag(SSC_CONFIG.NAME, SSC_CONFIG.FLAGS.shapes) ?? []);
         if (shapes.length == 0) {
             return;
         }
@@ -91,7 +87,7 @@ export class ChangeShapeDialog extends HandlebarsApplicationMixin(DocumentSheetV
         //Remove duplicates
         shapes = [...new Set(shapes)];
 
-        for (let shape of shapes) {
+        for (const shape of shapes) {
             const shapeActor = await fromUuid(shape);
             if (shapeActor) {
                 this.shapeNames.push({ name: shapeActor.name, label: shapeActor.name, uuid: shape });
@@ -107,19 +103,18 @@ export class ChangeShapeDialog extends HandlebarsApplicationMixin(DocumentSheetV
    * @param {RenderOptions} options                 Provided render options
    * @protected
    */
-    _onRender(context, options) {
-        const changeTypeSelector = this.element.querySelectorAll('select[name="changeType"]');
-        changeTypeSelector[0].addEventListener("change", event => {
-            const selection = $(event.target).find("option:selected");
-            this.changeType = selection.val();
+    _onRender(_context, _options) {
+        const changeTypeSelector = this.element.querySelector('select[name="changeType"]');
+        changeTypeSelector?.addEventListener("change", event => {
+            this.changeType = event.target.value;
             this.render();
         });
 
         if (game.actorBrowser) {
             const openBrowserButton = this.element.querySelector(".open-actor-browser-button");
-            openBrowserButton.addEventListener("click", async event => {
-                let worldActorsOnly = !game.modules.get("tcal")?.active; //If TCAL isn't enabled, we only want to browse for world actors
-                let result = await game.actorBrowser.openBrowser({ worldActorsOnly: worldActorsOnly });
+            openBrowserButton.addEventListener("click", async () => {
+                const worldActorsOnly = !game.modules.get("tcal")?.active; //If TCAL isn't enabled, we only want to browse for world actors
+                const result = await game.actorBrowser.openBrowser({ worldActorsOnly: worldActorsOnly });
                 if (result) {
                     await this.selectShape(result);
                 }
@@ -162,55 +157,55 @@ export class ChangeShapeDialog extends HandlebarsApplicationMixin(DocumentSheetV
             return;
         }
 
-        const shapeChoice = $(dialog.element).find("select[name='shape'").find("option:selected");
-        let selectedShape = dialog.shapeNames.find((s) => s.name == shapeChoice.val());
+        const shapeValue = dialog.element.querySelector("select[name='shape']")?.value;
+        const selectedShape = dialog.shapeNames.find(s => s.name === shapeValue);
         if (selectedShape.uuid == null) {
             Utils.showNotification("error", game.i18n.localize("SSC.Errors.NoShapeSelected"));
             return;
         }
 
         if (dialog.targets.length > 0) {
-            const targetChoice = $(dialog.element).find("select[name='target'").find("option:selected");
-            let target = dialog.targets.find((t) => t.name == targetChoice.val());
-            if (target.token == null) {
-                for (let target of dialog.targets) {
-                    if (target.token != null) {
-                        dialog.targetTokens.push(target.token);
-                    }
-                }
+            const targetValue = dialog.element.querySelector("select[name='target']")?.value;
+            const selectedTarget = dialog.targets.find(t => t.name === targetValue);
+            if (!selectedTarget.token) {
+                dialog.targetTokens.push(...dialog.targets.filter(t => t.token).map(t => t.token));
             } else {
-                dialog.targetTokens.push(target.token);
+                dialog.targetTokens.push(selectedTarget.token);
             }
         }
 
         //Check if we're trying to shape change a token that was already changed
-        for (let targetToken of dialog.targetTokens) {
-            let originalTokenId = targetToken.document.getFlag(SSC_CONFIG.NAME, SSC_CONFIG.FLAGS.originalToken);
+        const updatedTargetTokens = [];
+        for (const targetToken of dialog.targetTokens) {
+            const originalTokenId = targetToken.document.getFlag(SSC_CONFIG.NAME, SSC_CONFIG.FLAGS.originalToken);
             if (originalTokenId) {
-                let originalToken = canvas.tokens.get(originalTokenId);
+                const originalToken = canvas.tokens.get(originalTokenId);
                 if (originalToken) {
                     //This is an existing shape change. Revert back to the original token and then use that token moving forward
                     await ShapeChangerAPI.revertShape(targetToken);
-                    dialog.targetTokens = dialog.targetTokens.filter(t => t.id != targetToken.id);
-                    dialog.targetTokens.push(originalToken);
+                    updatedTargetTokens.push(originalToken);
+                    continue;
                 }
             }
-        }
 
-        const animalSmarts = $(dialog.element).find("input[id='animal-smarts'");
-        const longDuration = $(dialog.element).find("input[id='duration'");
+            updatedTargetTokens.push(targetToken);
+        }
+        dialog.targetTokens = updatedTargetTokens;
+
+        const animalSmarts = dialog.element.querySelector("#animal-smarts");
+        const longDuration = dialog.element.querySelector("#duration");
 
         dialog.close();
 
-        for (let targetToken of dialog.targetTokens) {
+        for (const targetToken of dialog.targetTokens) {
             const createdToken = await game.swadeShapeChanger.socket.executeAsGM(
                 "changeTokenIntoActor",
                 targetToken.scene.id,
                 targetToken.id,
                 selectedShape.uuid,
                 dialog.changeType,
-                !!(animalSmarts?.length && animalSmarts[0].checked),
-                !!(longDuration?.length && longDuration[0].checked),
+                animalSmarts?.checked ?? false,
+                longDuration?.checked ?? false,
                 raise);
 
             ShapeChanger.validateFinalValues(targetToken, createdToken);

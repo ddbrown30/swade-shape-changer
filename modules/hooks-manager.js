@@ -61,7 +61,7 @@ export class HooksManager {
             Handlers.onRenderItemSheet(app, html, data);
         });
 
-        Hooks.on("renderChoiceDialog", (app, html, data) => {
+        Hooks.on("renderChoiceDialog", (app, _html, _data) => {
             if (ShapeChanger.AddingItems){
                 //Hack to close the choice dialog that pops up during a shape change
                 app.close({force:true});
@@ -76,7 +76,7 @@ export class HooksManager {
             Handlers.onDropActorSheetData(actor, sheet, data);
         });
 
-        Hooks.on("preDeleteToken", (token, options, user) => {
+        Hooks.on("preDeleteToken", (token, options, _user) => {
             if (!options.skipDialog) {
                 const isChangeSource = token.getFlag(SSC_CONFIG.NAME, SSC_CONFIG.FLAGS.isChangeSource);
                 const originalToken = token.getFlag(SSC_CONFIG.NAME, SSC_CONFIG.FLAGS.originalToken);
@@ -86,7 +86,7 @@ export class HooksManager {
                         window: { title: game.i18n.localize("SSC.DeleteTokenWarning.Title") },
                         content: game.i18n.localize(content),
                         position: { width: 400 },
-                        yes: { callback: (event, button, dialog) => canvas.scene.deleteEmbeddedDocuments("Token", [token.id], { skipDialog: true }) },
+                        yes: { callback: () => canvas.scene.deleteEmbeddedDocuments("Token", [token.id], { skipDialog: true }) },
                         defaultYes: false
                     });
                     return false;

@@ -3,7 +3,7 @@ import { ShapeChanger } from "./shape-changer.js";
 import * as SSC_CONFIG from "./ssc-config.js";
 import { Utils } from "./utils.js";
 
-const { DocumentSheetV2, HandlebarsApplicationMixin } = foundry.applications.api
+const { DocumentSheetV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
 /**
  * Dialog for configuring and executing an actor swap
@@ -16,8 +16,8 @@ export class SwapActorDialog extends HandlebarsApplicationMixin(DocumentSheetV2)
         window: { title: "SSC.SwapActorDialog.Title" },
         position: { width: "250" },
         actions: {
-            confirm: function (event, button) { SwapActorDialog.handleSwapDialogConfirm(this); },
-            cancel: function (event, button) { this.close(); }
+            confirm: function () { SwapActorDialog.handleSwapDialogConfirm(this); },
+            cancel: function () { this.close(); }
         },
     };
 
@@ -28,38 +28,36 @@ export class SwapActorDialog extends HandlebarsApplicationMixin(DocumentSheetV2)
     };
 
     async _prepareContext(_options) {
-        let sourceToken = this.document.object;
+        const sourceToken = this.document.object;
 
         const placeholderText = game.actorBrowser ?
-                                    game.i18n.localize("SSC.SwapActorDialog.DragActorWithActorBrowser") :
-                                    game.i18n.localize("SSC.SwapActorDialog.DragActor");
-        let selectedActorText = this.selectedActor?.name;
+            game.i18n.localize("SSC.SwapActorDialog.DragActorWithActorBrowser") :
+            game.i18n.localize("SSC.SwapActorDialog.DragActor");
 
-        this.targets = [];
         this.targetTokens = [];
-        if (game.user.targets.size > 0) {
-            for (const target of game.user.targets) {
-                this.targets.push({ name: target.name, label: target.name, token: target });
-            }
-            this.targets.sort((a, b) => a.name.localeCompare(b.name));
-
-            if (game.user.targets.size > 1) {
-                const allTargetsString = game.i18n.localize("SSC.SwapActorDialog.TargetSelectionAll");
-                this.targets.unshift({ name: allTargetsString, label: allTargetsString, token: null });
-            }
+        this.targets = [...game.user.targets]
+            .map(target => ({ name: target.name, label: target.name, token: target }))
+            .sort((a, b) => a.name.localeCompare(b.name));
+        if (this.targets.length > 1) {
+            const allTargetsString = game.i18n.localize("SSC.SwapActorDialog.TargetSelectionAll");
+            this.targets.unshift({
+                name: allTargetsString,
+                label: allTargetsString,
+                token: null
+            });
         } else {
-            this.targetTokens.push(game.user.targets.size == 1 ? game.user.targets.first() : sourceToken);
+            this.targetTokens.push(game.user.targets.size === 1 ? game.user.targets.first() : sourceToken);
         }
 
         return {
             placeholderText: placeholderText,
-            selectedActorText: selectedActorText,
+            selectedActorText: this.selectedActor?.name,
             hasSelectedActor: !!this.selectedActor,
             targets: this.targets,
             target: this.targets[0]?.name,
             actorBrowser: !!game.actorBrowser
         };
-    };
+    }
 
     /**
    * Actions performed after any render of the Application.
@@ -68,12 +66,12 @@ export class SwapActorDialog extends HandlebarsApplicationMixin(DocumentSheetV2)
    * @param {RenderOptions} options                 Provided render options
    * @protected
    */
-    _onRender(context, options) {
+    _onRender(_context, _options) {
         if (game.actorBrowser) {
             const openBrowserButton = this.element.querySelector(".open-actor-browser-button");
-            openBrowserButton.addEventListener("click", async event => {
-                let worldActorsOnly = !game.modules.get("tcal")?.active; //If TCAL isn't enabled, we only want to browse for world actors
-                let result = await game.actorBrowser.openBrowser({ worldActorsOnly: worldActorsOnly });
+            openBrowserButton.addEventListener("click", async () => {
+                const worldActorsOnly = !game.modules.get("tcal")?.active; //If TCAL isn't enabled, we only want to browse for world actors
+                const result = await game.actorBrowser.openBrowser({ worldActorsOnly: worldActorsOnly });
                 if (result) {
                     await this.selectActor(result);
                 }
@@ -83,7 +81,7 @@ export class SwapActorDialog extends HandlebarsApplicationMixin(DocumentSheetV2)
         //Local function for handling actors being dropped on the dialog
         async function onDrop(event) {
             const data = foundry.applications.ux.TextEditor.implementation.getDragEventData(event);
-            if (data.type == "Actor") {
+            if (data.type === "Actor") {
                 this.selectActor(data.uuid);
             }
         }
@@ -121,37 +119,37 @@ export class SwapActorDialog extends HandlebarsApplicationMixin(DocumentSheetV2)
             return;
         }
 
-        if (dialog.targets.length > 0) {
-            const targetChoice = $(dialog.element).find("select[name='target'").find("option:selected");
-            let target = dialog.targets.find((t) => t.name == targetChoice.val());
-            if (target.token == null) {
-                for (let target of dialog.targets) {
-                    if (target.token != null) {
-                        dialog.targetTokens.push(target.token);
-                    }
-                }
+        if (dialog.targets.length > 1) {
+            const targetValue = dialog.element.querySelector("select[name='target']")?.value;
+            const selectedTarget = dialog.targets.find(t => t.name === targetValue);
+            if (!selectedTarget.token) {
+                dialog.targetTokens.push(...dialog.targets.filter(t => t.token).map(t => t.token));
             } else {
-                dialog.targetTokens.push(target.token);
+                dialog.targetTokens.push(selectedTarget.token);
             }
         }
 
         //Check if we're trying to swap a token that was already swapped
-        for (let targetToken of dialog.targetTokens) {
-            let originalTokenId = targetToken.document.getFlag(SSC_CONFIG.NAME, SSC_CONFIG.FLAGS.originalToken);
+        const updatedTargetTokens = [];
+        for (const targetToken of dialog.targetTokens) {
+            const originalTokenId = targetToken.document.getFlag(SSC_CONFIG.NAME, SSC_CONFIG.FLAGS.originalToken);
             if (originalTokenId) {
-                let originalToken = canvas.tokens.get(originalTokenId);
+                const originalToken = canvas.tokens.get(originalTokenId);
                 if (originalToken) {
                     //This is an existing shape change. Revert back to the original token and then use that token moving forward
                     await ShapeChangerAPI.revertShape(targetToken);
-                    dialog.targetTokens = dialog.targetTokens.filter(t => t.id != targetToken.id);
-                    dialog.targetTokens.push(originalToken);
+                    updatedTargetTokens.push(originalToken);
+                    continue;
                 }
             }
+
+            updatedTargetTokens.push(targetToken);
         }
+        dialog.targetTokens = updatedTargetTokens;
 
         dialog.close();
 
-        for (let targetToken of dialog.targetTokens) {
+        for (const targetToken of dialog.targetTokens) {
             await game.swadeShapeChanger.socket.executeAsGM(
                 "swapTokenToActor",
                 targetToken.scene.id,

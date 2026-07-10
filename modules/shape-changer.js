@@ -7,16 +7,16 @@ export class ShapeChanger {
 
     /**
      * Creates a new token based on an actor and configures it following the rules for the shape change power
-     * @param {String} sceneId //The token being transformed
-     * @param {String} originalTokenId //The token being transformed
-     * @param {Actor} actorToCreate //The actor to copy
-     * @param {String} typeChoice //The type of shape change (base or polymorph)
-     * @param {Boolean} animalSmarts //If true, the smarts on the new actor wil be marked as animal
-     * @param {Boolean} raise //If true, make modifications as if the power was cast with a raise
+     * @param {String} sceneId The token being transformed
+     * @param {String} originalTokenId The token being transformed
+     * @param {Actor} actorToCreate The actor to copy
+     * @param {String} typeChoice The type of shape change (base or polymorph)
+     * @param {Boolean} animalSmarts If true, the smarts on the new actor wil be marked as animal
+     * @param {Boolean} raise If true, make modifications as if the power was cast with a raise
      */
     static async changeTokenIntoActor(sceneId, originalTokenId, actorToCreateId, typeChoice, animalSmarts, longDuration, raise) {
-        const scene = game.scenes.find(s => s.id == sceneId);
-        let originalTokenDoc = scene.tokens.find(t => t.id == originalTokenId);
+        const scene = game.scenes.find(s => s.id === sceneId);
+        const originalTokenDoc = scene.tokens.find(t => t.id === originalTokenId);
         const originalActor = originalTokenDoc.actor;
         const actorToCreate = actorToCreateId.startsWith("Compendium") ? await game.tcal.importTransientActor(actorToCreateId) : await fromUuid(actorToCreateId);
 
@@ -49,42 +49,36 @@ export class ShapeChanger {
             "hidden": true
         }], { animate: false });
 
-        let createdTokenDoc = (await canvas.scene.createEmbeddedDocuments("Token", [newTokenDoc.toObject()]))[0];
-        let createdActor = createdTokenDoc.actor;
+        const createdTokenDoc = (await canvas.scene.createEmbeddedDocuments("Token", [newTokenDoc.toObject()]))[0];
+        const createdActor = createdTokenDoc.actor;
 
         //The shape change power retains the edges, hindrances, powers, and smarts and spirit linked skills of the original form
         //We need to delete all of those from the created actor and then copy over the ones from the original actor
         //We skip anything marked as grantedBy as those will be removed or granted again automatically if needed
 
-        //Edges, hindrances, and powers are not kept
-        let itemsToRemove = createdActor.items.filter(item =>
-            (item.type == "edge" || item.type == "hindrance" || item.type == "power") && !item.grantedBy
+        const itemsToRemove = createdActor.items.filter(item =>
+            //Edges, hindrances, and powers are not kept
+            ((["edge", "hindrance", "power"].includes(item.type)) && !item.grantedBy) ||
+
+            //Smarts and spirit linked skills are not kept
+            (item.type === "skill" && ["spirit", "smarts"].includes(item.system.attribute)) ||
+
+            //Resilient and Very Resilient are not kept
+            (item.type === "ability" && (item.system.swid.includes("resilient") || item.name.toLowerCase().includes("resilient"))) ||
+
+            //Innate powers are not kept
+            (item.type === "ability" && (item.system.swid.includes("innate-power") || item.name.toLowerCase().includes("innate power")))
         );
 
-        //Smarts and spirit linked skills are not kept
-        itemsToRemove = itemsToRemove.concat(createdActor.items.filter(item =>
-            item.type == "skill" && (item.system.attribute == "spirit" || item.system.attribute == "smarts")
-        ));
-
-        //Resilient and Very Resilient are not kept
-        itemsToRemove = itemsToRemove.concat(createdActor.items.filter(item =>
-            item.type == "ability" && (item.system.swid.includes("resilient") || item.name.toLowerCase().includes("resilient"))
-        ));
-
-        //Innate powers are not kept
-        itemsToRemove = itemsToRemove.concat(createdActor.items.filter(item =>
-            item.type == "ability" && (item.system.swid.includes("innate-power") || item.name.toLowerCase().includes("innate power"))
-        ));
-
-        for (let item of itemsToRemove) {
+        for (const item of itemsToRemove) {
             await item.delete();
         }
 
         //We've removed everything we're going to remove from the new actor so check if we still have any AEs that modify unsupported values and remove them
-        let effects = createdActor.appliedEffects.filter(ae => ae.changes.find(c => Utils.shouldDeleteKey(c.key)));
-        for (let effect of effects) {
+        const effects = createdActor.appliedEffects.filter(ae => ae.changes.find(c => Utils.shouldDeleteKey(c.key)));
+        for (const effect of effects) {
             effect.changes = effect.changes.filter(c => !Utils.shouldDeleteKey(c.key));
-            if (effect.changes.length == 0) {
+            if (!effect.changes.length) {
                 await effect.delete();
             } else {
                 await effect.update({ _id: undefined, ...effect });
@@ -93,23 +87,24 @@ export class ShapeChanger {
 
         //Now copy over the required items from the original actor
 
-        //Edges, hindrances, and powers are carried over
-        let itemsToAdd = originalActor.items.filter(item =>
-            (item.type == "edge" || item.type == "hindrance" || item.type == "power") && !item.grantedBy
+        const itemsToAdd = originalActor.items.filter(item =>
+            //Edges, hindrances, and powers are carried over
+            ((["edge", "hindrance", "power"].includes(item.type)) && !item.grantedBy) ||
+
+            //Smarts and spirit linked skills are carried over
+            (item.type === "skill" && ["spirit", "smarts"].includes(item.system.attribute))
         );
 
-        //Smarts and spirit linked skills are carried over
-        itemsToAdd = itemsToAdd.concat(originalActor.items.filter(item =>
-            item.type == "skill" && (item.system.attribute == "spirit" || item.system.attribute == "smarts")
-        ));
-
         ShapeChanger.AddingItems = true; //Hack we use to deal with all the pop ups that happen during this step
-        await createdActor.createEmbeddedDocuments("Item", itemsToAdd, { render: false, renderSheet: false });
-        ShapeChanger.AddingItems = false;
+        try {
+            await createdActor.createEmbeddedDocuments("Item", itemsToAdd, { render: false, renderSheet: false });
+        } finally {
+            ShapeChanger.AddingItems = false;
+        }
 
         //Copy over any temporary effects
         //We're not copying permanent effects as there is a high chance that we don't want them. If someone wants them, they can drag them over manually
-        let effectsToAdd = originalActor.effects.filter(effect => effect.isTemporary);
+        const effectsToAdd = originalActor.effects.filter(effect => effect.isTemporary);
         await createdActor.createEmbeddedDocuments("ActiveEffect", effectsToAdd, { render: false });
 
         let sheetClass = originalActor.flags?.core?.sheetClass ?? "";
@@ -119,7 +114,7 @@ export class ShapeChanger {
         }
 
         //The created actor keeps their smarts, spirit, and wounds
-        let actorUpdateData = {
+        const actorUpdateData = {
             name: originalActor.name,
             "system.attributes.smarts": originalActor._source.system.attributes.smarts,
             "system.attributes.spirit": originalActor._source.system.attributes.spirit,
@@ -143,8 +138,8 @@ export class ShapeChanger {
         await createdActor.update(actorUpdateData);
 
         //On a raise, we boost strength and vigor
-        if (typeChoice == "base" && raise) {
-            let raiseEffect = {
+        if (typeChoice === "base" && raise) {
+            const raiseEffect = {
                 name: game.i18n.localize("SSC.RaiseEffectName"),
                 img: "icons/magic/control/debuff-energy-hold-levitate-yellow.webp",
                 changes: [
@@ -156,7 +151,7 @@ export class ShapeChanger {
         }
 
         if (Utils.useSUCC()) {
-            let duration = longDuration ? 100 : undefined;
+            const duration = longDuration ? 100 : undefined;
             await game.succ.addCondition(SSC_CONFIG.SUCC_SHAPE_CHANGE, createdTokenDoc, { duration });
         }
 
@@ -171,37 +166,36 @@ export class ShapeChanger {
 
     /**
      * Plays the sequencer animation with the correct timing when changing or reverting shape
-     * @param {Scene} scene //The token being transformed
-     * @param {TokenDocument} originalTokenDoc //The token being transformed
-     * @param {TokenDocument} newTokenDoc //The newly created token
+     * @param {Scene} scene The scene containing the tokens
+     * @param {TokenDocument} originalTokenDoc The token being transformed
+     * @param {TokenDocument} newTokenDoc The newly created token
      */
     static async playSequencerAnimation(scene, sourceTokenDoc, destTokenDoc) {
         if (!Utils.useSequencer()) {
             return;
         }
 
-        let changeAnim = Utils.getSetting(SSC_CONFIG.SETTING_KEYS.changeAnim);
-        let changeDelay = Utils.getSetting(SSC_CONFIG.SETTING_KEYS.changeDelay);
-        let animScale = Utils.getSetting(SSC_CONFIG.SETTING_KEYS.animScale);
+        const changeAnim = Utils.getSetting(SSC_CONFIG.SETTING_KEYS.changeAnim);
+        const changeDelay = Utils.getSetting(SSC_CONFIG.SETTING_KEYS.changeDelay);
+        const animScale = Utils.getSetting(SSC_CONFIG.SETTING_KEYS.animScale);
 
         if (!Sequencer.Database.entryExists(changeAnim)) {
             return;
         }
 
         function getCenterPoint(tokenDoc, grid) {
-            let { x, y, width, height } = tokenDoc;
-
-            width *= grid.sizeX;
-            height *= grid.sizeY;
+            const { x, y } = tokenDoc;
+            const width = tokenDoc.width * grid.sizeX;
+            const height = tokenDoc.height * grid.sizeY;
             return { x: x + (width / 2), y: y + (height / 2) };
         }
         const oldCenterPoint = getCenterPoint(sourceTokenDoc, scene.grid);
         const newCenterPoint = getCenterPoint(destTokenDoc, scene.grid);
 
-        let originalTokenGS = sourceTokenDoc.width * sourceTokenDoc.texture.scaleX;
-        let newTokenGS = destTokenDoc.width * destTokenDoc.texture.scaleX;
+        const originalTokenGS = sourceTokenDoc.width * sourceTokenDoc.texture.scaleX;
+        const newTokenGS = destTokenDoc.width * destTokenDoc.texture.scaleX;
 
-        let changeSeq = new Sequence();
+        const changeSeq = new Sequence();
         changeSeq.effect()
         .file(changeAnim)
         .atLocation(oldCenterPoint, {gridUnits: true})
@@ -229,22 +223,22 @@ export class ShapeChanger {
 
     /**
      * Creates a new token based on an actor and configures it following the rules for the shape change power
-     * @param {String} createdTokenId //The token being reverted
-     * @param {String} originalTokenId //The original source token to revert to
+     * @param {String} createdTokenId The token being reverted
+     * @param {String} originalTokenId The original source token to revert to
      */
     static async revertChangeForToken(sceneId, createdTokenId, originalTokenId) {
-        const scene = game.scenes.find(s => s.id == sceneId);
-        let createdTokenDoc = scene.tokens.find(t => t.id == createdTokenId);
-        let createdActor = createdTokenDoc.actor;
-        let originalTokenDoc = scene.tokens.find(t => t.id == originalTokenId);
-        let originalActor = originalTokenDoc.actor;
+        const scene = game.scenes.find(s => s.id === sceneId);
+        const createdTokenDoc = scene.tokens.find(t => t.id === createdTokenId);
+        const createdActor = createdTokenDoc.actor;
+        const originalTokenDoc = scene.tokens.find(t => t.id === originalTokenId);
+        const originalActor = originalTokenDoc.actor;
 
         originalTokenDoc.x = createdTokenDoc.x;
         originalTokenDoc.y = createdTokenDoc.y;
 
         await ShapeChanger.playSequencerAnimation(scene, createdTokenDoc, originalTokenDoc);
 
-        let actorUpdateData = {
+        const actorUpdateData = {
             "system.bennies.value": createdActor.system.bennies.value,
             "system.wounds.value": createdActor.system.wounds.value,
             "system.fatigue.value": createdActor.system.fatigue.value,
@@ -257,7 +251,7 @@ export class ShapeChanger {
 
         //Remove all the existing temporary effects from the original actor
         //We're going to copy all the ones from the created actor and we're assuming that is the correct state
-        let effectsToDelete = originalActor.effects.filter(effect => effect.isTemporary);
+        const effectsToDelete = originalActor.effects.filter(effect => effect.isTemporary);
         const effectIdsToDelete = effectsToDelete.map(e => e.id);
         await originalActor.deleteEmbeddedDocuments("ActiveEffect", effectIdsToDelete, { render: false });
 
@@ -266,7 +260,7 @@ export class ShapeChanger {
             await game.succ.removeCondition(SSC_CONFIG.SUCC_SHAPE_CHANGE, createdTokenDoc);
         }
 
-        let effectsToAdd = createdActor.effects.filter(effect => effect.isTemporary);
+        const effectsToAdd = createdActor.effects.filter(effect => effect.isTemporary);
         await originalActor.createEmbeddedDocuments("ActiveEffect", effectsToAdd, { render: false });
 
         //Swap the combatants back
@@ -285,42 +279,42 @@ export class ShapeChanger {
     }
 
     /**
-     * Creates a new token based on an actor and configures it following the rules for the shape change power
-     * @param {Token} currentToken //The token that is currently represented in the combat tracker
-     * @param {Token} newToken //The token that should take the place of currentToken in all combat trackers
+     * Swap the token in the combat tracker
+     * @param {Token} currentToken The token that is currently represented in the combat tracker
+     * @param {Token} newToken The token that should take the place of currentToken in all combat trackers
      */
     static async swapTokensInCombat(currentToken, newToken) {
-        let combats = game.combats.filter(c => c.combatants.find(c => c.tokenId == currentToken.id));
-        if (combats.length > 0) {
-            let combatUpdateData = [];
-            for (let combat of combats) {
-                let combatants = combat.combatants.filter(c => c.tokenId == currentToken.id);
-                let combatantUpdateData = [];
-                for (let combatant of combatants) {
-                    combatantUpdateData.push({
-                        _id: combatant.id,
-                        tokenId: newToken.id,
-                        sceneId: currentToken.parent.id,
-                        actorId: newToken.actor.id,
-                    });
-                }
+        const combats = game.combats.filter(c => c.combatants.some(c => c.tokenId === currentToken.id));
+        if (!combats.length) return;
 
-                combatUpdateData.push({
-                    combatId: combat.id,
-                    combatantUpdateData: combatantUpdateData,
+        const combatUpdateData = [];
+        for (const combat of combats) {
+            const combatants = combat.combatants.filter(c => c.tokenId === currentToken.id);
+            const combatantUpdateData = [];
+            for (const combatant of combatants) {
+                combatantUpdateData.push({
+                    _id: combatant.id,
+                    tokenId: newToken.id,
+                    sceneId: currentToken.parent.id,
+                    actorId: newToken.actor.id,
                 });
             }
-            await game.swadeShapeChanger.socket.executeAsGM("updateCombatant", combatUpdateData);
+
+            combatUpdateData.push({
+                combatId: combat.id,
+                combatantUpdateData: combatantUpdateData,
+            });
         }
+        await game.swadeShapeChanger.socket.executeAsGM("updateCombatant", combatUpdateData);
     }
 
     /**
      * Updates a combatants in a combat
-     * @param {*} combatUpdateData //An array of combats and data about combatants to update
+     * @param {*} combatUpdateData An array of combats and data about combatants to update
      */
     static async updateCombatant(combatUpdateData) {
-        for (let data of combatUpdateData) {
-            let combat = game.combats.find(c => c.id == data.combatId);
+        for (const data of combatUpdateData) {
+            const combat = game.combats.get(data.combatId);
             await combat.updateEmbeddedDocuments("Combatant", data.combatantUpdateData);
         }
     }
@@ -347,16 +341,16 @@ export class ShapeChanger {
 
     /**
      * Creates a new token copied from the original token and transforms it into a human based on the transformation rules in the Horror Companion
-     * @param {Actor} sceneId //The actor to copy
-     * @param {String} originalTokenId //The token being transformed
+     * @param {Actor} sceneId The actor to copy
+     * @param {String} originalTokenId The token being transformed
      */
     static async werewolfToHuman(sceneId, originalTokenId) {
-        const scene = game.scenes.find(s => s.id == sceneId);
-        let originalTokenDoc = scene.tokens.find(t => t.id == originalTokenId);
+        const scene = game.scenes.get(sceneId);
+        const originalTokenDoc = scene.tokens.find(t => t.id === originalTokenId);
         const originalActor = originalTokenDoc.actor;
         const actorToCreate = await fromUuid(originalTokenDoc.actor.uuid);
 
-        let transformationAbility = originalActor.items.find((item) => Utils.isTransformationAbility(item));
+        const transformationAbility = originalActor.items.find((item) => Utils.isTransformationAbility(item));
         let humanTokenImg = "";
         let humanTokenScale = 1;
         if (transformationAbility) {
@@ -388,8 +382,8 @@ export class ShapeChanger {
         //Mark the token as a change source so that we warn the user if they try to delete it
         await originalTokenDoc.setFlag(SSC_CONFIG.NAME, SSC_CONFIG.FLAGS.isChangeSource, true);
 
-        let createdTokenDoc = (await canvas.scene.createEmbeddedDocuments("Token", [newTokenDoc.toObject()]))[0];
-        let createdActor = createdTokenDoc.actor;
+        const createdTokenDoc = (await canvas.scene.createEmbeddedDocuments("Token", [newTokenDoc.toObject()]))[0];
+        const createdActor = createdTokenDoc.actor;
 
         //Disable the Heat Seeing and Heat Sensing vision modes on the human form token
         const WEREWOLF_SIGHT_MODES = ["seeHeat", "senseHeat"]
@@ -428,42 +422,42 @@ export class ShapeChanger {
         //or manually adjusted attributes, flag whether Ferocity is detected.
         let hasFerocity = false;
 
-        let itemsToRemove = [];
-        for (let item of createdActor.items) {
-            if (item.type == "edge") {
+        const itemsToRemove = [];
+        for (const item of createdActor.items) {
+            if (item.type === "edge") {
                 //Werewolves do not keep their werewolf edges in human form
-                if (item.system.requirements.find((r) => r.selector == "werewolf")){
+                if (item.system.requirements.find((r) => r.selector === "werewolf")){
                     itemsToRemove.push(item);
                 }
-            } else if (item.type == "ability") {
+            } else if (item.type === "ability") {
                 //Werewolves do not keep their werewolf abilities in human form
-                if (WEREWOLF_ABILITIES.find((a) => a == item.system.swid)) {
-                    if (item.system.swid == "ferocity") {
+                if (WEREWOLF_ABILITIES.find((a) => a === item.system.swid)) {
+                    if (item.system.swid === "ferocity") {
                         hasFerocity = true;
                     }
                     itemsToRemove.push(item);
                 }
-            } else if (item.type == "hindrance") {
+            } else if (item.type === "hindrance") {
                 //Werewolves only have the weakness to silvered weapons while in werewolf form
                 if (item.name.toLowerCase().includes("weakness") && item.system.description.toLowerCase().includes("silvered weapons")) {
                     itemsToRemove.push(item);
                 }
             }
-            else if (item.type == "weapon") {
+            else if (item.type === "weapon") {
                 //Werewolves do not keep their werewolf weapons in human form
                 //This is required as removing the "Bite/Claws" ability does not remove the associated bite and claw weapons from inventory
-                if (WEREWOLF_WEAPONS.find((a) => a == item.system.swid)) {
+                if (WEREWOLF_WEAPONS.find((a) => a === item.system.swid)) {
                     itemsToRemove.push(item);
                 }
             }
         }
 
-        for (let item of itemsToRemove) {
+        for (const item of itemsToRemove) {
             await item.delete();
         }
 
         //Update the name
-        let actorUpdateData = {
+        const actorUpdateData = {
             name: originalActor.name,
             "system.details.autoCalcToughness": true //In the off chance this was disabled, we need to enable it so the human form is correct
         };
@@ -489,13 +483,13 @@ export class ShapeChanger {
 
     /**
      * Creates a new token based on an actor and configures it following the rules for the shape change power
-     * @param {String} sceneId //The token being transformed
-     * @param {String} originalTokenId //The token being transformed
-     * @param {String} actorToCreateId //The actor to copy
+     * @param {String} sceneId The token being transformed
+     * @param {String} originalTokenId The token being transformed
+     * @param {String} actorToCreateId The actor to copy
      */
     static async swapTokenToActor(sceneId, originalTokenId, actorToCreateId) {
-        const scene = game.scenes.find(s => s.id == sceneId);
-        let originalTokenDoc = scene.tokens.find(t => t.id == originalTokenId);
+        const scene = game.scenes.find(s => s.id === sceneId);
+        const originalTokenDoc = scene.tokens.find(t => t.id === originalTokenId);
         const originalActor = originalTokenDoc.actor;
         const actorToCreate = actorToCreateId.startsWith("Compendium") ? await game.tcal.importTransientActor(actorToCreateId) : await fromUuid(actorToCreateId);
 
@@ -528,14 +522,14 @@ export class ShapeChanger {
             "hidden": true
         }], { animate: false });
 
-        let createdTokenDoc = (await canvas.scene.createEmbeddedDocuments("Token", [newTokenDoc.toObject()]))[0];
-        let createdActor = createdTokenDoc.actor;
+        const createdTokenDoc = (await canvas.scene.createEmbeddedDocuments("Token", [newTokenDoc.toObject()]))[0];
+        const createdActor = createdTokenDoc.actor;
 
         //We've removed everything we're going to remove from the new actor so check if we still have any AEs that modify unsupported values and remove them
-        let effects = createdActor.appliedEffects.filter(ae => ae.changes.find(c => Utils.shouldDeleteKey(c.key)));
-        for (let effect of effects) {
+        const effects = createdActor.appliedEffects.filter(ae => ae.changes.find(c => Utils.shouldDeleteKey(c.key)));
+        for (const effect of effects) {
             effect.changes = effect.changes.filter(c => !Utils.shouldDeleteKey(c.key));
-            if (effect.changes.length == 0) {
+            if (!effect.changes.length) {
                 await effect.delete();
             } else {
                 await effect.update({ _id: undefined, ...effect });
@@ -544,7 +538,7 @@ export class ShapeChanger {
 
         //Copy over any temporary effects
         //We're not copying permanent effects as there is a high chance that we don't want them. If someone wants them, they can drag them over manually
-        let effectsToAdd = originalActor.effects.filter(effect => effect.isTemporary);
+        const effectsToAdd = originalActor.effects.filter(effect => effect.isTemporary);
         await createdActor.createEmbeddedDocuments("ActiveEffect", effectsToAdd, { render: false });
 
         let sheetClass = originalActor.flags?.core?.sheetClass ?? "";
@@ -554,7 +548,7 @@ export class ShapeChanger {
         }
 
         //The created actor keeps state values and nothing else
-        let actorUpdateData = {
+        const actorUpdateData = {
             name: originalActor.name,
             "system.bennies.value": originalActor.system.bennies.value,
             "system.wounds.value": Math.min(originalActor.system.wounds.value, createdActor.system.wounds.max),

@@ -60,6 +60,7 @@ export default [
         },
 
         rules: {
+            "prefer-const": "error",
             "no-undef": "error",
             "no-unused-vars": ["error", {
                 argsIgnorePattern: "^_",
