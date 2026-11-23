@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.4.2
+
+* Code refactoring
+
 ## 1.4.1
 
 * Updated version info to officially support v14
