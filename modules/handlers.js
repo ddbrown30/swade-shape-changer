@@ -30,7 +30,7 @@ export class Handlers {
                         {
                             label: "SSC.TcalWarning.IgnoreButton",
                             action: "ignore",
-                            callback: (event, button, dialog) => Utils.setSetting(SSC_CONFIG.SETTING_KEYS.ignoreTcalWarning, true)
+                            callback: () => Utils.setSetting(SSC_CONFIG.SETTING_KEYS.ignoreTcalWarning, true)
                         },
                     ],
                 });
@@ -44,7 +44,7 @@ export class Handlers {
      * @param {*} html
      * @param {*} data
      */
-    static async onPreUpdateItem(item, changes, options, user) {
+    static async onPreUpdateItem(item, _changes, _options, _user) {
         if (Utils.isShapeChangePower(item)) {
             //If we're making a change to the shape change power, we need to save the current tab so that it doesn't accidentally switch during the render
             Handlers.openTab = true;
@@ -62,8 +62,8 @@ export class Handlers {
      * @param {*} html
      * @param {*} data
      */
-    static async onRenderItemSheet(app, html, data) {
-        let item = app.item;
+    static async onRenderItemSheet(app, html, _data) {
+        const item = app.item;
         if (Utils.isShapeChangePower(item)) {
 
             //Local function for handling actors being dropped on the shape change item sheet
@@ -96,10 +96,10 @@ export class Handlers {
      * @param {Item} power //The shape change power item
      */
     static async addTabToShapeChangeSheet(app, html, power) {
-        let shapes = power.getFlag(SSC_CONFIG.NAME, SSC_CONFIG.FLAGS.shapes) ?? [];
-        let shapeData = [];
+        const shapes = power.getFlag(SSC_CONFIG.NAME, SSC_CONFIG.FLAGS.shapes) ?? [];
+        const shapeData = [];
 
-        for (let shape of shapes) {
+        for (const shape of shapes) {
             const shapeActor = await fromUuid(shape);
             shapeData.push({
                 name: shapeActor ? shapeActor.name : game.i18n.localize('SSC.ShapesTab.InvalidActor'),
@@ -136,8 +136,8 @@ export class Handlers {
         //Event handler for actor buttons
         html.querySelectorAll("input.actor-button").forEach(el => {
             el.addEventListener("click", ev => {
-                let shapes = power.getFlag(SSC_CONFIG.NAME, SSC_CONFIG.FLAGS.shapes);
-                let shape = shapes.find(e => e == ev.currentTarget.dataset.shapeId);
+                const shapes = power.getFlag(SSC_CONFIG.NAME, SSC_CONFIG.FLAGS.shapes);
+                const shape = shapes.find(e => e == ev.currentTarget.dataset.shapeId);
 
                 const shapeActor = fromUuidSync(shape);
                 if (shapeActor) {
@@ -192,7 +192,7 @@ export class Handlers {
      * @param {*} sheet
      * @param {*} data
      */
-    static async onDropActorSheetData(actor, sheet, data) {
+    static async onDropActorSheetData(actor, _sheet, data) {
         if (data.type == "Actor") {
             const power = actor.items.find((item) => Utils.isShapeChangePower(item));
             if (power) {
@@ -200,7 +200,7 @@ export class Handlers {
                     window: { title: game.i18n.localize("SSC.ActorSheetDropDialog.Title") },
                     content: game.i18n.localize("SSC.ActorSheetDropDialog.Body"),
                     position: { width: 400 },
-                    yes: { callback: (event, button, dialog) => Handlers.addActorToShapeChangePower(data, power) },
+                    yes: { callback: () => Handlers.addActorToShapeChangePower(data, power) },
                     defaultYes: true
                 });
             }
@@ -213,8 +213,8 @@ export class Handlers {
      * @param {Item} ability //The transformation ability item
      */
     static async addTabToTransformationAbility(app, html, ability) {
-        let humanTokenImg = ability.getFlag(SSC_CONFIG.NAME, SSC_CONFIG.FLAGS.humanTokenImg) ?? "";
-        let humanTokenScale = ability.getFlag(SSC_CONFIG.NAME, SSC_CONFIG.FLAGS.humanTokenScale) ?? "";
+        const humanTokenImg = ability.getFlag(SSC_CONFIG.NAME, SSC_CONFIG.FLAGS.humanTokenImg) ?? "";
+        const humanTokenScale = ability.getFlag(SSC_CONFIG.NAME, SSC_CONFIG.FLAGS.humanTokenScale) ?? "";
 
         const templateData = { humanTokenImg: humanTokenImg, humanTokenScale: humanTokenScale, isOwner: ability.isOwner };
         const content = await foundry.applications.handlebars.renderTemplate(SSC_CONFIG.DEFAULT_CONFIG.templates.humanTab, templateData);

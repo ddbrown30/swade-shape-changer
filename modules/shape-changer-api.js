@@ -51,13 +51,13 @@ export class ShapeChangerAPI {
             return;
         }
 
-        let originalTokenId = createdToken.document.getFlag(SSC_CONFIG.NAME, SSC_CONFIG.FLAGS.originalToken);
+        const originalTokenId = createdToken.document.getFlag(SSC_CONFIG.NAME, SSC_CONFIG.FLAGS.originalToken);
         if (!originalTokenId) {
             Utils.showNotification("error", game.i18n.localize("SSC.Errors.NotAChangedToken"));
             return;
         }
 
-        let originalToken = canvas.tokens.get(originalTokenId);
+        const originalToken = canvas.tokens.get(originalTokenId);
         if (!originalToken) {
             Utils.showNotification("error", game.i18n.localize("SSC.Errors.OriginalTokenNotFound"));
             return;

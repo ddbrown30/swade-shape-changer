@@ -144,12 +144,12 @@ export class Utils {
                     {
                         action: "openOptions",
                         label: game.i18n.localize("SSC.SUCCWarning.SUCCOptionsButton"),
-                        callback: async (event, button, dialog) => { game.settings.sheet.render(true, {activeCategory: "succ"}); }
+                        callback: async () => { game.settings.sheet.render(true, {activeCategory: "succ"}); }
                     },
                     {
                         action: "disable",
                         label: game.i18n.localize("SSC.SUCCWarning.DisableSupportButton"),
-                        callback: async (event, button, dialog) => {
+                        callback: async () => {
                             Utils.setSetting(SSC_CONFIG.SETTING_KEYS.useSUCC, false);
                             foundry.applications.api.DialogV2.prompt({
                                 window: { title: game.i18n.localize("SSC.SUCCDisableConfirmation.Title") },
