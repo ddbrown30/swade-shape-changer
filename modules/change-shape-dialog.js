@@ -47,13 +47,13 @@ export class ChangeShapeDialog extends HandlebarsApplicationMixin(DocumentSheetV
         this.targetTokens = [];
         if (game.user.targets.size > 0) {
             for (const target of game.user.targets) {
-                this.targets.push({ name: target.name, label: target.name, token: target });
+                this.targets.push({ id: target.id, label: target.name, token: target });
             }
-            this.targets.sort((a, b) => a.name.localeCompare(b.name));
+            this.targets.sort((a, b) => a.label.localeCompare(b.label));
 
             if (game.user.targets.size > 1) {
                 const allTargetsString = game.i18n.localize("SSC.ChangeShapeDialog.TargetSelectionAll");
-                this.targets.unshift({ name: allTargetsString, label: allTargetsString, token: null });
+                this.targets.unshift({ id: 0, label: allTargetsString, token: null });
             }
         } else {
             this.targetTokens.push(game.user.targets.size == 1 ? game.user.targets.first() : sourceToken);
@@ -65,7 +65,7 @@ export class ChangeShapeDialog extends HandlebarsApplicationMixin(DocumentSheetV
             shapes: this.shapeNames,
             shape: this.shapeNames[0].name,
             targets: this.targets,
-            target: this.targets[0]?.name,
+            target: this.targets[0]?.id,
             changeTypes: SSC_CONFIG.DEFAULT_CONFIG.changeTypes,
             changeType: this.changeType,
             useSUCC: Utils.useSUCC(),
@@ -166,7 +166,7 @@ export class ChangeShapeDialog extends HandlebarsApplicationMixin(DocumentSheetV
 
         if (dialog.targets.length > 0) {
             const targetValue = dialog.element.querySelector("select[name='target']")?.value;
-            const selectedTarget = dialog.targets.find(t => t.name === targetValue);
+            const selectedTarget = dialog.targets.find(t => t.id === targetValue);
             if (!selectedTarget.token) {
                 dialog.targetTokens.push(...dialog.targets.filter(t => t.token).map(t => t.token));
             } else {
