@@ -9,7 +9,7 @@ export class ShapeChanger {
      * Creates a new token based on an actor and configures it following the rules for the shape change power
      * @param {String} sceneId The token being transformed
      * @param {String} originalTokenId The token being transformed
-     * @param {Actor} actorToCreate The actor to copy
+     * @param {String} actorToCreateId The actor to copy
      * @param {String} typeChoice The type of shape change (base or polymorph)
      * @param {Boolean} animalSmarts If true, the smarts on the new actor wil be marked as animal
      * @param {Boolean} raise If true, make modifications as if the power was cast with a raise
@@ -121,7 +121,7 @@ export class ShapeChanger {
             "system.bennies.value": originalActor.system.bennies.value,
             "system.bennies.max": originalActor._source.system.bennies.max,
             "system.wounds.value": originalActor.system.wounds.value,
-            "system.wounds.max": originalActor._source.system.wounds.max,
+            "system.wounds.max": originalActor._source.system.wounds.max, //Getting from _source so that AEs brought with edges et al. don't result in double dipping
             "system.fatigue.value": originalActor.system.fatigue.value,
             "system.fatigue.max": originalActor.system._source.fatigue.max,
             "system.powerPoints": originalActor.system.powerPoints,
